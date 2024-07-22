@@ -22,7 +22,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: extractor/Dockerfile
@@ -34,7 +34,7 @@ jobs:
       - name: Push container
         if: github.ref == 'refs/heads/main'
         id: docker_build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: extractor/Dockerfile
