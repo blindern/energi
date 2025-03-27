@@ -25,7 +25,7 @@ importers:
     devDependencies:
       '@tsconfig/node20':
         specifier: ^20.1.2
-        version: 20.1.4
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.2
         version: 2.0.5
@@ -68,7 +68,7 @@ importers:
     devDependencies:
       '@tsconfig/node20':
         specifier: ^20.1.2
-        version: 20.1.4
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.2
         version: 2.0.5
@@ -609,8 +609,8 @@ packages:
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
-  '@tsconfig/node20@20.1.4':
-    resolution: {integrity: sha512-sqgsT69YFeLWf5NtJ4Xq/xAF8p4ZQHlmGW74Nu2tD4+g5fAsposc4ZfaaPixVu4y01BEiDCWLRDCvDM5JOsRxg==}
+  '@tsconfig/node20@20.1.5':
+    resolution: {integrity: sha512-Vm8e3WxDTqMGPU4GATF9keQAIy1Drd7bPwlgzKJnZtoOsTm1tduUTbDjg0W5qERvGuxPI2h9RbMufH0YdfBylA==}
 
   '@tsconfig/strictest@2.0.5':
     resolution: {integrity: sha512-ec4tjL2Rr0pkZ5hww65c+EEPYwxOi4Ryv+0MtjeaSQRJyq322Q27eOQiFbuNgw2hpL4hB1/W/HBGk3VKS43osg==}
@@ -1628,7 +1628,7 @@ snapshots:
 
   '@sinclair/typebox@0.27.8': {}
 
-  '@tsconfig/node20@20.1.4': {}
+  '@tsconfig/node20@20.1.5': {}
 
   '@tsconfig/strictest@2.0.5': {}
 
