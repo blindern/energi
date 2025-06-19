@@ -10,7 +10,7 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",
     "@tsconfig/strictest": "^2.0.2",
-    "@types/jest": "^29.2.5",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.10.1",
     "@types/ramda": "^0.30.0",
     "tsx": "^4.0.0",
