@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.2",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.0.0",
     "ramda": "^0.30.0",
     "trendline": "^1.0.0"
   },
