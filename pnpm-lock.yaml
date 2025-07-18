@@ -34,7 +34,7 @@ importers:
         version: 30.0.0
       '@types/node':
         specifier: ^22.10.1
-        version: 22.16.3
+        version: 22.16.4
       '@types/ramda':
         specifier: ^0.30.0
         version: 0.30.2
@@ -46,7 +46,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@22.16.3)(tsx@4.20.3)
+        version: 3.2.4(@types/node@22.16.4)(tsx@4.20.3)
 
   report:
     dependencies:
@@ -80,13 +80,13 @@ importers:
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
         specifier: ^4.0.0
-        version: 4.6.0(vite@7.0.4(@types/node@22.16.3)(tsx@4.20.3))
+        version: 4.6.0(vite@7.0.4(@types/node@22.16.4)(tsx@4.20.3))
       typescript:
         specifier: ^5.0.0
         version: 5.8.3
       vite:
         specifier: ^7.0.0
-        version: 7.0.4(@types/node@22.16.3)(tsx@4.20.3)
+        version: 7.0.4(@types/node@22.16.4)(tsx@4.20.3)
 
 packages:
 
@@ -800,8 +800,8 @@ packages:
   '@types/jest@30.0.0':
     resolution: {integrity: sha512-XTYugzhuwqWjws0CVz8QpM36+T+Dz5mTEBKhNs/esGLnCIlGdRy+Dq78NRjd7ls7r8BC8ZRMOrKlkO1hU0JOwA==}
 
-  '@types/node@22.16.3':
-    resolution: {integrity: sha512-sr4Xz74KOUeYadexo1r8imhRtlVXcs+j3XK3TcoiYk7B1t3YRVJgtaD3cwX73NYb71pmVuMLNRhJ9XKdoDB74g==}
+  '@types/node@22.16.4':
+    resolution: {integrity: sha512-PYRhNtZdm2wH/NT2k/oAJ6/f2VD2N2Dag0lGlx2vWgMSJXGNmlce5MiTQzoWAiIJtso30mjnfQCOKVH+kAQC/g==}
 
   '@types/ramda@0.30.2':
     resolution: {integrity: sha512-PyzHvjCalm2BRYjAU6nIB3TprYwMNOUY/7P/N8bSzp9W/yM2YrtGtAnnVtaCNSeOZ8DzKyFDvaqQs7LnWwwmBA==}
@@ -1734,7 +1734,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
       jest-regex-util: 30.0.1
 
   '@jest/schemas@30.0.1':
@@ -1747,7 +1747,7 @@ snapshots:
       '@jest/schemas': 30.0.1
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
       '@types/yargs': 17.0.33
       chalk: 4.1.2
 
@@ -1966,7 +1966,7 @@ snapshots:
       expect: 30.0.4
       pretty-format: 30.0.2
 
-  '@types/node@22.16.3':
+  '@types/node@22.16.4':
     dependencies:
       undici-types: 6.21.0
 
@@ -1990,7 +1990,7 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@vitejs/plugin-react@4.6.0(vite@7.0.4(@types/node@22.16.3)(tsx@4.20.3))':
+  '@vitejs/plugin-react@4.6.0(vite@7.0.4(@types/node@22.16.4)(tsx@4.20.3))':
     dependencies:
       '@babel/core': 7.28.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.0)
@@ -1998,7 +1998,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.19
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.0.4(@types/node@22.16.3)(tsx@4.20.3)
+      vite: 7.0.4(@types/node@22.16.4)(tsx@4.20.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -2010,13 +2010,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@7.0.2(@types/node@22.16.3)(tsx@4.20.3))':
+  '@vitest/mocker@3.2.4(vite@7.0.2(@types/node@22.16.4)(tsx@4.20.3))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 7.0.2(@types/node@22.16.3)(tsx@4.20.3)
+      vite: 7.0.2(@types/node@22.16.4)(tsx@4.20.3)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -2287,7 +2287,7 @@ snapshots:
   jest-mock@30.0.2:
     dependencies:
       '@jest/types': 30.0.1
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
       jest-util: 30.0.2
 
   jest-regex-util@30.0.1: {}
@@ -2295,7 +2295,7 @@ snapshots:
   jest-util@30.0.2:
     dependencies:
       '@jest/types': 30.0.1
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
       chalk: 4.1.2
       ci-info: 4.3.0
       graceful-fs: 4.2.11
@@ -2562,13 +2562,13 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite-node@3.2.4(@types/node@22.16.3)(tsx@4.20.3):
+  vite-node@3.2.4(@types/node@22.16.4)(tsx@4.20.3):
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.0.2(@types/node@22.16.3)(tsx@4.20.3)
+      vite: 7.0.2(@types/node@22.16.4)(tsx@4.20.3)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -2583,7 +2583,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.0.2(@types/node@22.16.3)(tsx@4.20.3):
+  vite@7.0.2(@types/node@22.16.4)(tsx@4.20.3):
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.6(picomatch@4.0.2)
@@ -2592,11 +2592,11 @@ snapshots:
       rollup: 4.44.2
       tinyglobby: 0.2.14
     optionalDependencies:
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
       fsevents: 2.3.3
       tsx: 4.20.3
 
-  vite@7.0.4(@types/node@22.16.3)(tsx@4.20.3):
+  vite@7.0.4(@types/node@22.16.4)(tsx@4.20.3):
     dependencies:
       esbuild: 0.25.6
       fdir: 6.4.6(picomatch@4.0.2)
@@ -2605,15 +2605,15 @@ snapshots:
       rollup: 4.45.0
       tinyglobby: 0.2.14
     optionalDependencies:
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
       fsevents: 2.3.3
       tsx: 4.20.3
 
-  vitest@3.2.4(@types/node@22.16.3)(tsx@4.20.3):
+  vitest@3.2.4(@types/node@22.16.4)(tsx@4.20.3):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.0.2(@types/node@22.16.3)(tsx@4.20.3))
+      '@vitest/mocker': 3.2.4(vite@7.0.2(@types/node@22.16.4)(tsx@4.20.3))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -2631,11 +2631,11 @@ snapshots:
       tinyglobby: 0.2.14
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.0.2(@types/node@22.16.3)(tsx@4.20.3)
-      vite-node: 3.2.4(@types/node@22.16.3)(tsx@4.20.3)
+      vite: 7.0.2(@types/node@22.16.4)(tsx@4.20.3)
+      vite-node: 3.2.4(@types/node@22.16.4)(tsx@4.20.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.16.3
+      '@types/node': 22.16.4
     transitivePeerDependencies:
       - jiti
       - less
