@@ -11,8 +11,8 @@ importers:
   extractor:
     dependencies:
       '@js-temporal/polyfill':
-        specifier: ^0.4.2
-        version: 0.4.4
+        specifier: ^0.5.0
+        version: 0.5.1
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
@@ -54,8 +54,8 @@ importers:
         specifier: workspace:*
         version: link:../extractor
       '@js-temporal/polyfill':
-        specifier: ^0.4.2
-        version: 0.4.4
+        specifier: ^0.5.0
+        version: 0.5.1
       react:
         specifier: ^19.0.0
         version: 19.1.0
@@ -374,8 +374,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
 
-  '@js-temporal/polyfill@0.4.4':
-    resolution: {integrity: sha512-2X6bvghJ/JAoZO52lbgyAPFj8uCflhTo2g7nkFzEQdXd/D8rEeD4HtmTEpmtGCva260fcd66YNXBOYdnmHqSOg==}
+  '@js-temporal/polyfill@0.5.1':
+    resolution: {integrity: sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ==}
     engines: {node: '>=12'}
 
   '@rolldown/pluginutils@1.0.0-beta.30':
@@ -1159,9 +1159,6 @@ packages:
   ts-toolbelt@9.6.0:
     resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
 
-  tslib@2.8.1:
-    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
-
   tsx@4.20.4:
     resolution: {integrity: sha512-yyxBKfORQ7LuRt/BQKBXrpcq59ZvSW0XxwfjAt3w2/8PmdxaFzijtMhTawprSHhpzeM5BgU2hXHG3lklIERZXg==}
     engines: {node: '>=18.0.0'}
@@ -1548,10 +1545,9 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
 
-  '@js-temporal/polyfill@0.4.4':
+  '@js-temporal/polyfill@0.5.1':
     dependencies:
       jsbi: 4.3.2
-      tslib: 2.8.1
 
   '@rolldown/pluginutils@1.0.0-beta.30': {}
 
@@ -2282,8 +2278,6 @@ snapshots:
   trendline@1.0.0: {}
 
   ts-toolbelt@9.6.0: {}
-
-  tslib@2.8.1: {}
 
   tsx@4.20.4:
     dependencies:
