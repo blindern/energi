@@ -85,6 +85,11 @@ function parseCsvData(csvData: string): HourUsage[] {
     return [];
   }
 
+  // Remove UTF-8 BOM.
+  if (csvData.charCodeAt(0) === 0xFEFF) {
+    csvData = csvData.slice(1);
+  }
+
   const lines = csvData.split("\n");
 
   const firstLine = lines[0]!.split(";");
