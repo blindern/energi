@@ -15,7 +15,7 @@ importers:
         version: 0.4.4
       dotenv:
         specifier: ^17.0.0
-        version: 17.2.1
+        version: 17.2.2
       ramda:
         specifier: ^0.30.0
         version: 0.30.1
@@ -832,8 +832,8 @@ packages:
   dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
 
-  dotenv@17.2.1:
-    resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
+  dotenv@17.2.2:
+    resolution: {integrity: sha512-Sf2LSQP+bOlhKWWyhFsn0UsfdK/kCWRv1iuA2gXAwt3dyNabr6QSj00I2V10pidqz69soatm9ZwZvpQMTIOd5Q==}
     engines: {node: '>=12'}
 
   electron-to-chromium@1.5.211:
@@ -1918,7 +1918,7 @@ snapshots:
       '@babel/runtime': 7.28.3
       csstype: 3.1.3
 
-  dotenv@17.2.1: {}
+  dotenv@17.2.2: {}
 
   electron-to-chromium@1.5.211: {}
 
