@@ -670,9 +670,9 @@ export async function generateReportData(data: Data) {
     ] !== undefined;
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
-  const untilDayIncl = now.toPlainMonthDay();
+  const untilDayIncl = now.toPlainDate().toPlainMonthDay();
 
-  const currentMonth = now.toPlainYearMonth();
+  const currentMonth = now.toPlainDate().toPlainYearMonth();
   const previousMonth = currentMonth.subtract({ months: 1 });
 
   const currentMonthDates = datesInRange(
@@ -779,7 +779,7 @@ export async function generateReportData(data: Data) {
     },
     table: {
       yearlyToThisDate: {
-        untilDayIncl: now.toPlainMonthDay().toString(),
+        untilDayIncl: now.toPlainDate().toPlainMonthDay().toString(),
         data: generateYearlyTableReport(data, indexedData, {
           untilDayIncl,
         }),
