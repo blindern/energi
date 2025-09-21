@@ -1,5 +1,7 @@
 {
-  "extends": ["config:base"],
+  "extends": [
+    "config:recommended"
+  ],
   "lockFileMaintenance": {
     "enabled": true
   },
@@ -8,18 +10,23 @@
   },
   "packageRules": [
     {
-      "matchDepTypes": ["devDependencies", "packageManager"],
+      "matchDepTypes": [
+        "devDependencies",
+        "packageManager"
+      ],
       "automerge": true,
       "automergeType": "branch"
     },
     {
-      "matchUpdateTypes": ["lockFileMaintenance"],
+      "matchUpdateTypes": [
+        "lockFileMaintenance"
+      ],
       "automerge": true,
       "automergeType": "branch"
     }
   ],
   "prCreation": "not-pending",
-  "stabilityDays": 3,
+  "minimumReleaseAge": "3 days",
   "prNotPendingHours": 74,
   "timezone": "Europe/Oslo"
 }
