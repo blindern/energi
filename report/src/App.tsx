@@ -1185,7 +1185,8 @@ function Presentation({
 }
 
 function FormatPlainMonthDay({ value }: { value: Temporal.PlainMonthDay }) {
-  const { isoDay, isoMonth } = value.getISOFields();
+  const isoDay = value.day;
+  const isoMonth = Number(value.monthCode.slice(1, 3));
   return (
     <>
       {isoDay}. {monthNamesLong[isoMonth]!.toLowerCase()}
