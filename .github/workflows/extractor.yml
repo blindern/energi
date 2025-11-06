@@ -2,7 +2,7 @@ name: Build extractor service
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: henrist-test-ubuntu-latest
     permissions:
       contents: read
       packages: write

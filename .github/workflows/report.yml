@@ -2,7 +2,40 @@ name: Build report app
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: henrist-test-ubuntu-latest
+    strategy:
+      matrix:
+        group:
+          - job01
+          - job02
+          - job03
+          - job04
+          - job05
+          - job06
+          - job07
+          - job08
+          - job09
+          - job10
+          - job11
+          - job12
+          - job13
+          - job14
+          - job15
+          - job16
+          - job17
+          - job18
+          - job19
+          - job20
+          - job21
+          - job22
+          - job23
+          - job24
+          - job25
+          - job26
+          - job27
+          - job28
+          - job29
+          - job30
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
