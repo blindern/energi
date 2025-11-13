@@ -605,7 +605,7 @@ function createEt(data: ReturnType<typeof generateEnergyTemperatureReport>) {
       "temperature",
       "power"
     ),
-    linearH21V23: createTrend(
+    linearH21V24: createTrend(
       data
         .filter(
           (it) =>
@@ -613,31 +613,7 @@ function createEt(data: ReturnType<typeof generateEnergyTemperatureReport>) {
             it.power != null &&
             it.temperature < trendlineTemperatureLowerThan
         )
-        .filter((it) => it.date >= "2021-07" && it.date < "2023-07"),
-      "temperature",
-      "power"
-    ),
-    linearH23: createTrend(
-      data
-        .filter(
-          (it) =>
-            it.temperature != null &&
-            it.power != null &&
-            it.temperature < trendlineTemperatureLowerThan
-        )
-        .filter((it) => it.date >= "2023-07" && it.date < "2024"),
-      "temperature",
-      "power"
-    ),
-    linearV24: createTrend(
-      data
-        .filter(
-          (it) =>
-            it.temperature != null &&
-            it.power != null &&
-            it.temperature < trendlineTemperatureLowerThan
-        )
-        .filter((it) => it.date >= "2024-01" && it.date < "2024-07"),
+        .filter((it) => it.date >= "2021-07" && it.date < "2024-07"),
       "temperature",
       "power"
     ),
@@ -649,7 +625,31 @@ function createEt(data: ReturnType<typeof generateEnergyTemperatureReport>) {
             it.power != null &&
             it.temperature < trendlineTemperatureLowerThan
         )
-        .filter((it) => it.date >= "2024-07"),
+        .filter((it) => it.date >= "2024-07" && it.date < "2025"),
+      "temperature",
+      "power"
+    ),
+    linearV25: createTrend(
+      data
+        .filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        )
+        .filter((it) => it.date >= "2025-01" && it.date < "2025-07"),
+      "temperature",
+      "power"
+    ),
+    linearH25: createTrend(
+      data
+        .filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        )
+        .filter((it) => it.date >= "2025-07"),
       "temperature",
       "power"
     ),
