@@ -11,7 +11,7 @@ export async function getNordpoolData(
 ): Promise<HourPrice[]> {
   const endDate = date.toString();
 
-  const url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPrices?date=${endDate}&market=DayAhead&deliveryArea=NO1&currency=NOK`;
+  const url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${endDate}&market=DayAhead&indexNames=NO1&currency=NOK&resolutionInMinutes=60`;
 
   // TODO: retry 500 errors
   const response = await fetch(url);
@@ -31,7 +31,17 @@ export async function getNordpoolData(
     throw new Error("Unexpected content type");
   }
 
-  const responseJson = (await response.json()) as any;
+  const responseJson = (await response.json()) as {
+    areaStates: {
+      state: string;
+      areas: string[];
+    }[];
+    multiIndexEntries: {
+      deliveryStart: string;
+      deliveryEnd: string;
+      entryPerArea: Record<string, number>;
+    }[];
+  };
 
   /*
   Example states:
@@ -46,8 +56,8 @@ export async function getNordpoolData(
   */
 
   if (
-    responseJson.areaStates[0].state !== "Final" ||
-    responseJson.areaStates[0].areas[0] !== "NO1"
+    responseJson.areaStates[0]?.state !== "Final" ||
+    responseJson.areaStates[0]?.areas[0] !== "NO1"
   ) {
     console.log(responseJson);
     throw new Error("Not final NO1 data");
@@ -57,7 +67,7 @@ export async function getNordpoolData(
 
   /*
   Example data:
-      "multiAreaEntries": [
+      "multiIndexEntries": [
         {
             "deliveryStart": "2024-12-03T23:00:00Z",
             "deliveryEnd": "2024-12-04T00:00:00Z",
@@ -67,7 +77,7 @@ export async function getNordpoolData(
         },
   */
 
-  for (const entry of responseJson.multiAreaEntries) {
+  for (const entry of responseJson.multiIndexEntries) {
     const timeStart = Temporal.Instant.from(entry.deliveryStart);
     if (!timeStart) {
       console.log(entry);
