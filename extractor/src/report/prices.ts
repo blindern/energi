@@ -20,19 +20,24 @@ export const pricesConfig = {
     Nettleie: { mva: 0.25 },
     "Nettleie: Elavgift": { mva: 0.25 },
     "Nettleie: Energiledd": { mva: 0.25 },
+    "Nettleie: Energifondet": { mva: 0.25 },
     "Nettleie: Forbruksavgift": { mva: 0.25 },
     Rabatt: { mva: 0.25 },
     "Strøm: Finansielt resultat": { mva: 0 },
     "Strøm: Kraft": { mva: 0.25 },
     "Strøm: Påslag": { mva: 0.25 },
+    "Diverse: Nettleiehåndtering": { mva: 0.25 },
     Strømstøtte: { mva: 0 },
+    Norgespris: { mva: 0 },
     "Unsupported price model": { mva: 0 },
   },
   static: {
     Fastledd: { mva: 0.25 },
     "Nettleie: Aktiv effekt": { mva: 0.25 },
+    "Nettleie: Effekt": { mva: 0.25 },
     "Nettleie: Effektledd": { mva: 0.25 },
     "Nettleie: Energifondet fastavgift": { mva: 0.25 },
+    "Nettleie: Enova påslag": { mva: 0.25 },
     "Nettleie: Fastledd lavspent Næring": { mva: 0.25 },
     "Nettleie: Fastledd": { mva: 0.25 },
     "Strøm: Fastbeløp": { mva: 0.25 },
@@ -50,9 +55,8 @@ export interface UsagePrice {
 
 // Fra og med april 2024 er denne fast 50 kr måned og ikke 600 i året delt på antall dager,
 // så det er bittelitt avrundingsfeil forbundet med det.
+// Sist fakturert for perioden november 2024.
 export const stroemFastbeloepAar = 600 * 1.25;
-export const stroemPaaslagPerKwh = 0.02 * 1.25;
-export const fjernvarmeFastleddAar = 3000 * 1.25;
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
 const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
@@ -91,20 +95,32 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2024-08": 433.33 * 1.25, // From invoice.
   "2024-09": 433.33 * 1.25, // From invoice.
   "2024-10": 433.33 * 1.25, // From invoice.
-  "2024-11": 433.33 * 1.25, // Assumption.
-  "2024-12": 433.33 * 1.25, // Assumption.
-  "2025-01": 433.33 * 1.25, // Assumption.
-  "2025-02": 433.33 * 1.25, // Assumption.
-  "2025-03": 433.33 * 1.25, // Assumption.
-  "2025-04": 433.33 * 1.25, // Assumption.
-  "2025-05": 433.33 * 1.25, // Assumption.
-  "2025-06": 433.33 * 1.25, // Assumption.
-  "2025-07": 433.33 * 1.25, // Assumption.
-  "2025-08": 433.33 * 1.25, // Assumption.
-  "2025-09": 433.33 * 1.25, // Assumption.
-  "2025-10": 433.33 * 1.25, // Assumption.
+  "2024-11": 433.33 * 1.25, // From invoice.
+  "2024-12": 433.33 * 1.25, // From invoice.
+  "2025-01": 433.33 * 1.25, // From invoice.
+  "2025-02": 433.33 * 1.25, // From invoice.
+  "2025-03": 433.33 * 1.25, // From invoice.
+  "2025-04": 433.33 * 1.25, // From invoice.
+  "2025-05": 433.33 * 1.25, // From invoice.
+  "2025-06": 433.33 * 1.25, // From invoice.
+  "2025-07": 433.33 * 1.25, // From invoice.
+  "2025-08": 433.33 * 1.25, // From invoice.
+  "2025-09": 433.33 * 1.25, // From invoice.
+  "2025-10": 433.33 * 1.25, // From invoice.
   "2025-11": 433.33 * 1.25, // Assumption.
   "2025-12": 433.33 * 1.25, // Assumption.
+  "2026-01": 433.33 * 1.25, // Assumption.
+  "2026-02": 433.33 * 1.25, // Assumption.
+  "2026-03": 433.33 * 1.25, // Assumption.
+  "2026-04": 433.33 * 1.25, // Assumption.
+  "2026-05": 433.33 * 1.25, // Assumption.
+  "2026-06": 433.33 * 1.25, // Assumption.
+  "2026-07": 433.33 * 1.25, // Assumption.
+  "2026-08": 433.33 * 1.25, // Assumption.
+  "2026-09": 433.33 * 1.25, // Assumption.
+  "2026-10": 433.33 * 1.25, // Assumption.
+  "2026-11": 433.33 * 1.25, // Assumption.
+  "2026-12": 433.33 * 1.25, // Assumption.
 };
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
@@ -169,14 +185,16 @@ export function fjernvarmeRabatt(
   spotpriceMonth: number,
   priceSupport: number
 ) {
-  const cutoff2022 = Temporal.PlainYearMonth.from("2022-11");
-  const cutoff2023 = Temporal.PlainYearMonth.from("2023-11");
-  const cutoff2024 = Temporal.PlainYearMonth.from("2024-01");
+  const monthStr = month.toString();
+  const cutoff2022 = "2022-11";
+  const cutoff2023 = "2023-11";
+  const cutoff2024 = "2024-01";
+  const cutoff2025 = "2025-11";
   const priceWithSupport = spotpriceMonth - priceSupport;
 
-  if (Temporal.PlainYearMonth.compare(month, cutoff2022) < 0) {
+  if (monthStr < cutoff2022) {
     return -priceWithSupport * 0.05;
-  } else if (Temporal.PlainYearMonth.compare(month, cutoff2023) < 0) {
+  } else if (monthStr < cutoff2023) {
     // 5 % for 0-90 øre (eks mva)
     // 30 % for 90-250 øre (eks mva)
     // 60 % fra 250 øre (eks mva)
@@ -190,7 +208,7 @@ export function fjernvarmeRabatt(
     const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
 
     return step1 + step2 + step3;
-  } else if (Temporal.PlainYearMonth.compare(month, cutoff2024) < 0) {
+  } else if (monthStr < cutoff2024) {
     // Fra nettsiden:
     // 1. november 2022 innførte vi i tillegg en ny trinnvis rabattordning for at du skal ha større forutsigbarhet i en tid med svært varierende energipriser. Stiger prisen, stiger også rabattsatsen.
     // Rabattsatsene gjelder etter at fjernvarmestøtten er trukket fra. Ordningen varer ut 2023.
@@ -213,13 +231,21 @@ export function fjernvarmeRabatt(
     const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
 
     return step1 + step2 + step3;
-  } else {
+  } else if (monthStr < cutoff2025) {
     // 2024-05-31: https://celsio.no/fjernvarme/rabatt-pa-fjernvarme
     // 0 % for 0-50 øre (eks mva)
     // 5 % for 50- øre (eks mva)
 
     const threshold = 0.5 * 1.25;
     const step = -Math.max(0, priceWithSupport - threshold) * 0.05;
+
+    return step;
+  } else {
+    // 2025-12-02: https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/endring-i-prismodellen-fra-1-november
+    // 5 % => 5.25 %
+
+    const threshold = 0.5 * 1.25;
+    const step = -Math.max(0, priceWithSupport - threshold) * 0.0525;
 
     return step;
   }
@@ -265,6 +291,38 @@ export const stroemKraftMonthlyAverage: Record<string, number | undefined> = {
   "2024-08": 0.166 * 1.25,
   "2024-09": 0.2692 * 1.25,
   "2024-10": 0.458 * 1.25,
+  "2024-11": 0.6346 * 1.25,
+  "2024-12": 0.7898 * 1.25,
+  // Fra og med 2025 regnes dette annerledes nedenfor.
+};
+
+// Pris på strømfaktura for strøm inkludert påslag.
+// Beløp er eks mva (og uten nettleie og diverse).
+export const stroemFakturaPriceByMonthByMeterName: Record<
+  string,
+  Record<string, number>
+> = {
+  // "Gamle BS"
+  "707057500051982349": {
+    "2025-01": 52518.84 * 1.25,
+    "2025-02": 54948.34 * 1.25,
+    "2025-03": 40708.39 * 1.25,
+    "2025-04": 31230.35 * 1.25,
+    "2025-05": 37914.54 * 1.25,
+    "2025-06": 29303.5 * 1.25,
+    "2025-07": 19567.62 * 1.25,
+    "2025-08": 31196.92 * 1.25,
+    "2025-09": 28096.61 * 1.25,
+    "2025-10": 34894.03 * 1.25,
+  },
+  // Nordfløy
+  "707057500058091327": {
+    "2025-06": 1, // Part of 2025-07.
+    "2025-07": 2152.35 * 1.25,
+    "2025-08": 4338.75 * 1.25,
+    "2025-09": 6655.18 * 1.25,
+    "2025-10": 8888.52 * 1.25,
+  },
 };
 
 export const stroemKraftMonthlyDefaultFactor = 1.1;
@@ -308,6 +366,9 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2024-08": 0.1691, // From invoice.
   "2024-09": 0.1281, // From invoice.
   "2024-10": 0.2856, // From invoice.
+  "2024-11": 0.1131, // From invoice.
+  "2024-12": 0.1602, // From invoice.
+  // Ikke noe finansielt resultat fra og med 2025 - endret strømavtale.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -346,20 +407,32 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2024-08": 0.05 * 1.25,
   "2024-09": 0.05 * 1.25,
   "2024-10": 0.05 * 1.25,
-  "2024-11": 0.05 * 1.25, // Asssumption.
-  "2024-12": 0.05 * 1.25, // Asssumption.
-  "2025-01": 0.05 * 1.25, // Asssumption.
-  "2025-02": 0.05 * 1.25, // Asssumption.
-  "2025-03": 0.05 * 1.25, // Asssumption.
-  "2025-04": 0.05 * 1.25, // Asssumption.
-  "2025-05": 0.05 * 1.25, // Asssumption.
-  "2025-06": 0.05 * 1.25, // Asssumption.
-  "2025-07": 0.05 * 1.25, // Asssumption.
-  "2025-08": 0.05 * 1.25, // Asssumption.
-  "2025-09": 0.05 * 1.25, // Asssumption.
-  "2025-10": 0.05 * 1.25, // Asssumption.
-  "2025-11": 0.05 * 1.25, // Asssumption.
-  "2025-12": 0.05 * 1.25, // Asssumption.
+  "2024-11": 0.05 * 1.25,
+  "2024-12": 0.05 * 1.25,
+  "2025-01": 0.05 * 1.25,
+  "2025-02": 0.05 * 1.25,
+  "2025-03": 0.05 * 1.25,
+  "2025-04": 0.05 * 1.25,
+  "2025-05": 0.05 * 1.25,
+  "2025-06": 0.05 * 1.25,
+  "2025-07": 0.05 * 1.25,
+  "2025-08": 0.05 * 1.25,
+  "2025-09": 0.05 * 1.25,
+  "2025-10": 0.05 * 1.25,
+  "2025-11": 0.05 * 1.25,
+  "2025-12": 0.05 * 1.25,
+  "2026-01": 0.05 * 1.25, // Asssumption.
+  "2026-02": 0.05 * 1.25, // Asssumption.
+  "2026-03": 0.05 * 1.25, // Asssumption.
+  "2026-04": 0.05 * 1.25, // Asssumption.
+  "2026-05": 0.05 * 1.25, // Asssumption.
+  "2026-06": 0.05 * 1.25, // Asssumption.
+  "2026-07": 0.05 * 1.25, // Asssumption.
+  "2026-08": 0.05 * 1.25, // Asssumption.
+  "2026-09": 0.05 * 1.25, // Asssumption.
+  "2026-10": 0.05 * 1.25, // Asssumption.
+  "2026-11": 0.05 * 1.25, // Asssumption.
+  "2026-12": 0.05 * 1.25, // Asssumption.
 };
 
 // https://www.skatteetaten.no/bedrift-og-organisasjon/avgifter/saravgifter/om/elektrisk-kraft/
@@ -400,23 +473,37 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2024-08": 0.1644 * 1.25,
   "2024-09": 0.1644 * 1.25,
   "2024-10": 0.1644 * 1.25,
-  "2024-11": 0.1644 * 1.25, // Assumption.
-  "2024-12": 0.1644 * 1.25, // Assumption.
+  "2024-11": 0.1644 * 1.25,
+  "2024-12": 0.1644 * 1.25,
   // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2025/id3057881/
   // "Avgift på elektrisk kraft"
   // https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/priser-fjernvarme/prismodell-for-fjernvarme-i-borettslag-og-sameier
-  "2025-01": 0.0979 * 1.25, // Assumption.
-  "2025-02": 0.0979 * 1.25, // Assumption.
-  "2025-03": 0.0979 * 1.25, // Assumption.
-  "2025-04": 0.1693 * 1.25, // Assumption.
-  "2025-05": 0.1693 * 1.25, // Assumption.
-  "2025-06": 0.1693 * 1.25, // Assumption.
-  "2025-07": 0.1693 * 1.25, // Assumption.
-  "2025-08": 0.1693 * 1.25, // Assumption.
-  "2025-09": 0.1693 * 1.25, // Assumption.
-  "2025-10": 0.1693 * 1.25, // Assumption.
-  "2025-11": 0.1693 * 1.25, // Assumption.
-  "2025-12": 0.1693 * 1.25, // Assumption.
+  "2025-01": 0.0979 * 1.25,
+  "2025-02": 0.0979 * 1.25,
+  "2025-03": 0.0979 * 1.25,
+  "2025-04": 0.1693 * 1.25,
+  "2025-05": 0.1693 * 1.25,
+  "2025-06": 0.1693 * 1.25,
+  "2025-07": 0.1693 * 1.25,
+  "2025-08": 0.1693 * 1.25,
+  "2025-09": 0.1693 * 1.25,
+  "2025-10": 0.1253 * 1.25,
+  "2025-11": 0.1253 * 1.25, // Assumption.
+  "2025-12": 0.1253 * 1.25, // Assumption.
+  // https://www.regjeringen.no/no/aktuelt/foreslar-reduserte-stromutgifter/id3124548/
+  // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2026/id3121982/
+  "2026-01": 0.0418 * 1.25, // Assumption.
+  "2026-02": 0.0418 * 1.25, // Assumption.
+  "2026-03": 0.0418 * 1.25, // Assumption.
+  "2026-04": 0.0418 * 1.25, // Assumption.
+  "2026-05": 0.0418 * 1.25, // Assumption.
+  "2026-06": 0.0418 * 1.25, // Assumption.
+  "2026-07": 0.0418 * 1.25, // Assumption.
+  "2026-08": 0.0418 * 1.25, // Assumption.
+  "2026-09": 0.0418 * 1.25, // Assumption.
+  "2026-10": 0.0418 * 1.25, // Assumption.
+  "2026-11": 0.0418 * 1.25, // Assumption.
+  "2026-12": 0.0418 * 1.25, // Assumption.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -458,22 +545,35 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2024-09": 98.4 * 36 * 1.25, // From invoice.
   // Prisjustering fra 1. oktober.
   "2024-10": 106.2 * 104 * 1.25, // From invoice.
-  "2024-11": 120 * 104 * 1.25, // Guess.
-  "2024-12": 120 * 104 * 1.25, // Guess.
+  "2024-11": 107.2 * 104 * 1.25, // From invoice.
+  "2024-12": 105.2 * 104 * 1.25, // From invoice.
   // https://assets.ctfassets.net/jbub5thfds15/3ZXkhgLNRYaCtyZoH4q6xz/5ea4057a4edc76bdd18171c76fa289b0/Tariffblad_3_0_Stor_n_ring_effekt_lavspent_20250101.pdf
-  "2025-01": 118.2 * 92 * 1.25, // Guess.
-  "2025-02": 112.2 * 92 * 1.25, // Guess.
-  "2025-03": 104.4 * 92 * 1.25, // Guess.
-  "2025-04": 115.2 * 38 * 1.25, // Guess.
-  "2025-05": 106 * 38 * 1.25, // Guess.
-  "2025-06": 95.2 * 38 * 1.25, // Guess.
-  "2025-07": 71.2 * 38 * 1.25, // Guess.
-  "2025-08": 97.2 * 38 * 1.25, // Guess.
-  "2025-09": 98.4 * 38 * 1.25, // Guess.
+  "2025-01": 118.8 * 92 * 1.25, // From invoice.
+  "2025-02": 121 * 92 * 1.25, // From invoice.
+  "2025-03": 107.2 * 92 * 1.25, // From invoice.
+  "2025-04": 104 * 31 * 1.25, // From invoice.
+  "2025-05": 117.6 * 31 * 1.25, // From invoice.
+  "2025-06": 116.4 * 31 * 1.25, // From invoice.
+  "2025-07": 70.2 * 31 * 1.25, // From invoice.
+  "2025-08": 95 * 31 * 1.25, // From invoice.
+  "2025-09": 107.4 * 31 * 1.25, // From invoice.
   // Antatt prisjustering fra 1. oktober.
-  "2025-10": 106.2 * 98 * 1.25, // Guess.
-  "2025-11": 115 * 98 * 1.25, // Guess.
-  "2025-12": 120 * 98 * 1.25, // Guess.
+  // https://www.elvia.no/siteassets/dokumenter/priser/2025/1-oktober-2025/tariffblad_3_0_stor-naring_effekt_lavspent_20251001.pdf
+  "2025-10": 107.6 * 74 * 1.25, // From invoice.
+  "2025-11": 115 * 74 * 1.25, // Guess.
+  "2025-12": 120 * 74 * 1.25, // Guess.
+  "2026-01": 118.8 * 74 * 1.25, // Guess.
+  "2026-02": 121 * 74 * 1.25, // Guess.
+  "2026-03": 107.2 * 74 * 1.25, // Guess.
+  "2026-04": 104 * 31 * 1.25, // Guess.
+  "2026-05": 117.6 * 31 * 1.25, // Guess.
+  "2026-06": 116.4 * 31 * 1.25, // Guess.
+  "2026-07": 70.2 * 31 * 1.25, // Guess.
+  "2026-08": 95 * 31 * 1.25, // Guess.
+  "2026-09": 107.4 * 31 * 1.25, // Guess.
+  "2026-10": 107.6 * 74 * 1.25, // Guess.
+  "2026-11": 115 * 74 * 1.25, // Guess.
+  "2026-12": 120 * 74 * 1.25, // Guess.
 };
 
 // https://www.regjeringen.no/no/aktuelt/vil-forlenge-stromstotten-til-husholdninger-ut-2023/id2930621/
@@ -530,16 +630,29 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   "2025-10": 0.9,
   "2025-11": 0.9,
   "2025-12": 0.9,
+  "2026-01": 0.9,
+  "2026-02": 0.9,
+  "2026-03": 0.9,
+  "2026-04": 0.9,
+  "2026-05": 0.9,
+  "2026-06": 0.9,
+  "2026-07": 0.9,
+  "2026-08": 0.9,
+  "2026-09": 0.9,
+  "2026-10": 0.9,
+  "2026-11": 0.9,
+  "2026-12": 0.9,
+};
+
+const norgesprisFrom: Record<string, string> = {
+  "707057500051982349": "2025-10-24",
+  "707057500058091327": "2025-10-31",
 };
 
 function getPriceSupportThreshold(yearMonth: string) {
   if (yearMonth < "2024") return 0.7;
   if (yearMonth < "2025") return 0.73;
   return 0.75;
-}
-
-function getFinansieltResultatPerKwh(yearMonth: string) {
-  return finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0;
 }
 
 function getPriceSupportOfMonthPerKwh(
@@ -579,6 +692,8 @@ function calculateStroemHourlyPricePre2023Apr(props: {
   hour: number;
   usageKwh: number;
 }): UsagePrice {
+  const stroemPaaslagPerKwh = 0.02 * 1.25;
+
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
   const dateHour = dateHourIndexer(props);
@@ -593,7 +708,8 @@ function calculateStroemHourlyPricePre2023Apr(props: {
         spotpriceHourPerKwh *
         (props.indexedData.stroemSpotpriceFactorByMonth[yearMonth] ??
           stroemKraftMonthlyDefaultFactor),
-      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
+      "Strøm: Finansielt resultat":
+        finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0,
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
       "Nettleie: Forbruksavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
@@ -623,6 +739,8 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
   hour: number;
   usageKwh: number;
 }): UsagePrice {
+  const stroemPaaslagPerKwh = 0.02 * 1.25;
+
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
   const dateHour = dateHourIndexer(props);
@@ -639,7 +757,8 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
         spotpriceHourPerKwh *
         (props.indexedData.stroemSpotpriceFactorByMonth[yearMonth] ??
           stroemKraftMonthlyDefaultFactor),
-      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
+      "Strøm: Finansielt resultat":
+        finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0,
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
       "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
@@ -665,12 +784,73 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
   };
 }
 
+function calculateStroemHourlyPriceFrom2025Jan(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+  meterName: string;
+}): UsagePrice {
+  const stroemPaaslagPerKwh = 0.0165 * 1.25;
+
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+  const dateHour = dateHourIndexer(props);
+
+  const spotpriceHourPerKwh =
+    props.indexedData.spotpriceByHour[dateHour] ?? NaN;
+
+  let kraftPerKwh =
+    props.indexedData.stroemFakturaPricePerKwhByMonthByMeterName[
+      props.meterName
+    ]?.[yearMonth];
+  if (kraftPerKwh != null) {
+    kraftPerKwh -= stroemPaaslagPerKwh;
+  } else {
+    kraftPerKwh = spotpriceHourPerKwh * stroemKraftMonthlyDefaultFactor;
+  }
+
+  const isNorgespris = norgesprisFrom[props.meterName]
+    ? props.date >= norgesprisFrom[props.meterName]!
+    : false;
+
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      "Strøm: Kraft": kraftPerKwh,
+      "Strøm: Påslag": stroemPaaslagPerKwh,
+      "Diverse: Nettleiehåndtering": 0.0025 * 1.25,
+      // TODO: Nordfløy har forskjellige pristrinn på effekt - ikke tatt høyde for i denne beregningen p.t.
+      "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
+      "Nettleie: Energifondet": 0.01 * 1.25,
+      "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+      Strømstøtte: isNorgespris
+        ? 0
+        : -getPriceSupportOfHourPerKwh(yearMonth, spotpriceHourPerKwh),
+      Norgespris: isNorgespris ? 0.4 * 1.25 - spotpriceHourPerKwh : 0,
+    }),
+    static: {
+      "Nettleie: Enova påslag": (800 * 1.25) / 365 / 24,
+      "Nettleie: Fastledd":
+        (nettFastleddMaanedByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+      "Nettleie: Effekt":
+        (effektleddPerKwhByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+    },
+  };
+}
+
 export function calculateStroemHourlyPrice(props: {
   data: Data;
   indexedData: IndexedData;
   date: string;
   hour: number;
   usageKwh: number;
+  meterName: string;
 }): UsagePrice {
   // Different price model before 2022 not implemented.
   if (Number(props.date.slice(0, 4)) < 2022) {
@@ -685,32 +865,23 @@ export function calculateStroemHourlyPrice(props: {
     };
   }
 
-  if (props.date >= "2023-04") {
+  if (props.date >= "2025-01") {
+    return calculateStroemHourlyPriceFrom2025Jan(props);
+  } else if (props.date >= "2023-04") {
     return calculateStroemHourlyPriceFrom2023Apr(props);
+  } else {
+    return calculateStroemHourlyPricePre2023Apr(props);
   }
-
-  return calculateStroemHourlyPricePre2023Apr(props);
 }
 
-export function calculateFjernvarmeHourlyPrice(props: {
+export function calculateFjernvarmeHourlyPricePre2025Jan(props: {
   data: Data;
   indexedData: IndexedData;
   date: string;
   hour: number;
   usageKwh: number;
 }): UsagePrice | null {
-  // Different price model before 2022 not implemented.
-  if (Number(props.date.slice(0, 4)) < 2022) {
-    return {
-      usageKwh: props.usageKwh,
-      variableByKwh: {
-        "Unsupported price model": NaN,
-      },
-      static: {
-        "Unsupported price model": NaN,
-      },
-    };
-  }
+  const fjernvarmeFastleddAar = 3000 * 1.25;
 
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
@@ -742,6 +913,77 @@ export function calculateFjernvarmeHourlyPrice(props: {
   };
 }
 
+export function calculateFjernvarmeHourlyPriceFrom2025Jan(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+}): UsagePrice | null {
+  const fjernvarmeFastleddAar = 6000 * 1.25;
+
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+
+  const priceSupport = getPriceSupportOfMonthPerKwh(
+    yearMonth,
+    props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+  );
+
+  const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
+
+  const isNorgespris = props.date >= "2025-11";
+
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      Kraft: spotpriceMonth,
+      Rabatt: isNorgespris
+        ? 0
+        : fjernvarmeRabatt(
+            plainDate.toPlainYearMonth(),
+            spotpriceMonth,
+            priceSupport
+          ),
+      "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
+      Nettleie: fjernvarmeNettleiePerKwhByMonth[yearMonth] ?? NaN,
+      Forbruksavgift: forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+      Strømstøtte: isNorgespris ? 0 : -priceSupport,
+      Norgespris: isNorgespris ? 0.4 * 1.25 - spotpriceMonth : 0,
+    }),
+    static: {
+      Fastledd: fjernvarmeFastleddAar / plainDate.daysInYear / 24,
+    },
+  };
+}
+
+export function calculateFjernvarmeHourlyPrice(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+}): UsagePrice | null {
+  // Different price model before 2022 not implemented.
+  if (Number(props.date.slice(0, 4)) < 2022) {
+    return {
+      usageKwh: props.usageKwh,
+      variableByKwh: {
+        "Unsupported price model": NaN,
+      },
+      static: {
+        "Unsupported price model": NaN,
+      },
+    };
+  }
+
+  if (props.date >= "2025-01") {
+    return calculateFjernvarmeHourlyPriceFrom2025Jan(props);
+  } else {
+    return calculateFjernvarmeHourlyPricePre2025Jan(props);
+  }
+}
+
 export function calculateHourlyPrice({
   data,
   indexedData,
@@ -754,29 +996,35 @@ export function calculateHourlyPrice({
   indexedData: IndexedData;
   date: string;
   hour: number;
-  stroem: number;
+  stroem: Record<string, number>;
   fjernvarme: number;
 }) {
-  return (
-    sumPrice(
+  let result = 0;
+
+  for (const [meterName, usageKwh] of Object.entries(stroem)) {
+    result += sumPrice(
       calculateStroemHourlyPrice({
         data,
         indexedData,
         date,
         hour,
-        usageKwh: stroem,
+        usageKwh,
+        meterName,
       })
-    ) +
-    sumPrice(
-      calculateFjernvarmeHourlyPrice({
-        data,
-        indexedData,
-        date,
-        hour,
-        usageKwh: fjernvarme,
-      })
-    )
+    );
+  }
+
+  result += sumPrice(
+    calculateFjernvarmeHourlyPrice({
+      data,
+      indexedData,
+      date,
+      hour,
+      usageKwh: fjernvarme,
+    })
   );
+
+  return result;
 }
 
 function addPricesInner(

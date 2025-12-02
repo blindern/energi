@@ -1015,7 +1015,7 @@ function TableData({
             </td>
             <td>
               {Math.round(it.stroem.usageKwh)}
-              {isDaily && it.stroemDatapointsCount !== 24 && (
+              {isDaily && it.stroemDatapointsCount !== 48 && (
                 <div className="incomplete-data">
                   {it.stroemDatapointsCount} datapunkter
                 </div>
@@ -1032,8 +1032,10 @@ function TableData({
             <td>{Math.round(it.stroem.usageKwh + it.fjernvarme.usageKwh)}</td>
             <td>
               {Math.round(
-                it.stroem.variableByKwh["Strømstøtte"]! +
-                  it.fjernvarme.variableByKwh["Strømstøtte"]!
+                (it.stroem.variableByKwh["Strømstøtte"] ?? 0) +
+                  (it.fjernvarme.variableByKwh["Strømstøtte"] ?? 0) +
+                  (it.stroem.variableByKwh["Norgespris"] ?? 0) +
+                  (it.fjernvarme.variableByKwh["Norgespris"] ?? 0)
               ) || 0}
             </td>
             <td>

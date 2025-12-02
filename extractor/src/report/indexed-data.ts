@@ -6,12 +6,19 @@ import {
   DataPowerUsageHour,
   DataTemperatureHour,
 } from "../service/data-store.js";
-import { stroemKraftMonthlyAverage } from "./prices.js";
+import {
+  stroemFakturaPriceByMonthByMeterName,
+  stroemKraftMonthlyAverage,
+} from "./prices.js";
 
 export interface IndexedData {
   lastDate: Temporal.PlainDate;
-  stroemByHour: Record<string, number | undefined>;
+  stroemByMeterNameByHour: Record<string, Record<string, number>>;
   stroemSpotpriceFactorByMonth: Record<string, number | undefined>;
+  stroemFakturaPricePerKwhByMonthByMeterName: Record<
+    string,
+    Record<string, number | undefined> | undefined
+  >;
   fjernvarmeByHour: Record<string, number | undefined>;
   spotpriceByHour: Record<string, number | undefined>;
   spotpriceByMonth: Record<string, number | undefined>;
@@ -41,19 +48,19 @@ export function indexData(data: Data): IndexedData {
     ) as string
   );
 
-  const stroemByHour = R.mapObjIndexed(
-    (it) => R.sum(it!.map((x) => x.usage)),
-    R.groupBy<DataPowerUsageHour>(
-      dateHourIndexer,
-      Object.entries(data.powerUsage ?? {})
-        .filter(([key, _]) => key !== "Fjernvarme")
-        .map(([_, values]) => values)
-        .flat()
-        // Data for 2017 is only since 2017-10-01,
-        // so skip those months.
-        .filter((it) => it.date >= "2018")
-    )
-  );
+  const stroemByMeterNameByHour: Record<string, Record<string, number>> = {};
+
+  for (const [meterName, usageData] of Object.entries(
+    data.powerUsage ?? {}
+  ).filter(([key, _]) => key !== "Fjernvarme")) {
+    // Data for 2017 is only since 2017-10-01, so skip those months.
+    for (const dataPoint of usageData.filter((it) => it.date >= "2018")) {
+      const hourKey = dateHourIndexer(dataPoint);
+      stroemByMeterNameByHour[hourKey] ??= {};
+      stroemByMeterNameByHour[hourKey][meterName] ??= 0;
+      stroemByMeterNameByHour[hourKey][meterName] += dataPoint.usage;
+    }
+  }
 
   const fjernvarmeByHour = R.mapObjIndexed(
     (it) => it.usage,
@@ -95,10 +102,36 @@ export function indexData(data: Data): IndexedData {
     return it != null && spotprice != null ? it / spotprice : undefined;
   }, stroemKraftMonthlyAverage);
 
+  const stroemPowerUsage = Object.fromEntries(
+    Object.entries(data.powerUsage ?? {}).filter(
+      ([key, _]) => key !== "Fjernvarme"
+    )
+  );
+
+  const stroemUsageByMonthByMeterName = R.mapObjIndexed(
+    (usage) =>
+      R.mapObjIndexed(
+        (it) => R.sum(it!.map((x) => x.usage)),
+        R.groupBy<DataPowerUsageHour>(yearMonthIndexer, usage)
+      ),
+    stroemPowerUsage
+  );
+
+  const stroemFakturaPricePerKwhByMonthByMeterName = R.mapObjIndexed(
+    (it, meterName) =>
+      R.mapObjIndexed(
+        (it, yearMonth) =>
+          it / stroemUsageByMonthByMeterName[meterName]![yearMonth]!,
+        it
+      ),
+    stroemFakturaPriceByMonthByMeterName
+  );
+
   return {
     lastDate,
-    stroemByHour,
+    stroemByMeterNameByHour,
     stroemSpotpriceFactorByMonth,
+    stroemFakturaPricePerKwhByMonthByMeterName,
     fjernvarmeByHour,
     spotpriceByHour,
     spotpriceByMonth,

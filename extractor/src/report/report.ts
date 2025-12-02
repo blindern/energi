@@ -120,17 +120,22 @@ export function generateMonthlyReport(
       for (const date of datesByYearMonths[yearMonth] ?? []) {
         for (const hour of hoursInADay) {
           const index = dateHourIndexer({ date, hour });
-          priceStroem += zeroForNaN(
-            sumPrice(
-              calculateStroemHourlyPrice({
-                data,
-                indexedData,
-                date,
-                hour,
-                usageKwh: indexedData.stroemByHour[index] ?? NaN,
-              })
-            )
-          );
+          for (const [meterName, usageKwh] of Object.entries(
+            indexedData.stroemByMeterNameByHour[index] ?? {}
+          )) {
+            priceStroem += zeroForNaN(
+              sumPrice(
+                calculateStroemHourlyPrice({
+                  data,
+                  indexedData,
+                  date,
+                  hour,
+                  usageKwh,
+                  meterName,
+                })
+              )
+            );
+          }
           priceFjernvarme += zeroForNaN(
             sumPrice(
               calculateFjernvarmeHourlyPrice({
@@ -213,15 +218,20 @@ export function generateDailyReport(
 
     for (const hour of hoursInADay) {
       const index = dateHourIndexer({ date, hour });
-      priceStroem += sumPrice(
-        calculateStroemHourlyPrice({
-          data,
-          indexedData,
-          date,
-          hour,
-          usageKwh: indexedData.stroemByHour[index] ?? NaN,
-        })
-      );
+      for (const [meterName, usageKwh] of Object.entries(
+        indexedData.stroemByMeterNameByHour[index] ?? {}
+      )) {
+        priceStroem += sumPrice(
+          calculateStroemHourlyPrice({
+            data,
+            indexedData,
+            date,
+            hour,
+            usageKwh,
+            meterName,
+          })
+        );
+      }
       priceFjernvarme += sumPrice(
         calculateFjernvarmeHourlyPrice({
           data,
@@ -267,13 +277,13 @@ export function generateHourlyReport(
         )
         .map((hour) => {
           const index = dateHourIndexer({ date, hour });
-          const stroem = indexedData.stroemByHour[index];
+          const stroem = indexedData.stroemByMeterNameByHour[index] ?? {};
           const fjernvarme = indexedData.fjernvarmeByHour[index];
           return {
             date,
             hour,
             name: `${dateStr} kl ${String(hour).padStart(2, "0")}`,
-            stroem: indexedData.stroemByHour[index],
+            stroem: Object.values(stroem).reduce((a, b) => a + b, 0),
             fjernvarme: indexedData.fjernvarmeByHour[index],
             temperature: indexedData.temperatureByHour[index],
             price:
@@ -330,7 +340,7 @@ export function generateEnergyTemperatureReport(
       // Skip dates with incomplete data.
       const index = dateHourIndexer({ date, hour: 23 });
       return (
-        indexedData.stroemByHour[index] != null &&
+        indexedData.stroemByMeterNameByHour[index] != null &&
         indexedData.fjernvarmeByHour[index] != null
       );
     })
@@ -420,19 +430,29 @@ function generatePriceReport(
         // The fallback value doesn't have that much impact, so keeping a static value.
         // (This is relevant for future data.)
         const stroemUsage =
-          undefinedForZero(indexedData.stroemByHour[index]) ?? 50;
+          undefinedForZero(
+            Object.values(
+              indexedData.stroemByMeterNameByHour[index] ?? {}
+            ).reduce((a, b) => a + b, 0)
+          ) ?? 50;
         const fjernvarmeUsage =
           undefinedForZero(indexedData.fjernvarmeByHour[index]) ?? 80;
 
-        const priceStroem = sumPrice(
-          calculateStroemHourlyPrice({
-            data,
-            indexedData,
-            date,
-            hour,
-            usageKwh: stroemUsage,
-          })
-        );
+        let priceStroem = 0;
+        for (const [meterName, usageKwh] of Object.entries(
+          indexedData.stroemByMeterNameByHour[index] ?? {}
+        )) {
+          priceStroem += sumPrice(
+            calculateStroemHourlyPrice({
+              data,
+              indexedData,
+              date,
+              hour,
+              usageKwh,
+              meterName,
+            })
+          );
+        }
 
         const priceFjernvarme = sumPrice(
           calculateFjernvarmeHourlyPrice({
@@ -467,16 +487,23 @@ function generateCostReport(
   const stroemItems = dates
     .flatMap((dateObj) => {
       const date = dateObj.toString();
-      return hoursInADay.map((hour) => {
-        const index = dateHourIndexer({ date, hour });
-        return calculateStroemHourlyPrice({
-          data,
-          indexedData,
-          date,
-          hour,
-          usageKwh: indexedData.stroemByHour[index] ?? NaN,
-        });
-      });
+      return hoursInADay
+        .map((hour) => {
+          const index = dateHourIndexer({ date, hour });
+          return Object.entries(
+            indexedData.stroemByMeterNameByHour[index] ?? {}
+          ).map(([meterName, usageKwh]) => {
+            return calculateStroemHourlyPrice({
+              data,
+              indexedData,
+              date,
+              hour,
+              usageKwh,
+              meterName,
+            });
+          });
+        })
+        .flat();
     })
     .filter((it): it is UsagePrice => it != null && !isNaN(it.usageKwh));
 
