@@ -18,8 +18,8 @@ importers:
         specifier: ^17.0.0
         version: 17.2.3
       ramda:
-        specifier: ^0.31.0
-        version: 0.31.3
+        specifier: ^0.32.0
+        version: 0.32.0
       trendline:
         specifier: ^1.0.0
         version: 1.1.0
@@ -1387,8 +1387,8 @@ packages:
     resolution: {integrity: sha512-9uBdv/B4EefsuAL+pWqueZyZS2Ba+LxfFeQ9DN14HU4bN8bhaxKdkpjpB6fs9+pSjIBu+FXQHImEg8j/Lw0+vA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  ramda@0.31.3:
-    resolution: {integrity: sha512-xKADKRNnqmDdX59PPKLm3gGmk1ZgNnj3k7DryqWwkamp4TJ6B36DdpyKEQ0EoEYmH2R62bV4Q+S0ym2z8N2f3Q==}
+  ramda@0.32.0:
+    resolution: {integrity: sha512-GQWAHhxhxWBWA8oIBr1XahFVjQ9Fic6MK9ikijfd4TZHfE2+urfk+irVlR5VOn48uwMgM+loRRBJd6Yjsbc0zQ==}
 
   react-dom@19.2.3:
     resolution: {integrity: sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==}
@@ -2696,7 +2696,7 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 18.3.1
 
-  ramda@0.31.3: {}
+  ramda@0.32.0: {}
 
   react-dom@19.2.3(react@19.2.3):
     dependencies:
