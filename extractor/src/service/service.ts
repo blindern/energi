@@ -1,9 +1,10 @@
-import { SpanStatusCode, trace } from "@opentelemetry/api";
+import { SpanStatusCode } from "@opentelemetry/api";
 import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.ts";
 import { datesInRange } from "../dates.ts";
 import { logger } from "../logger.ts";
 import { generateReportDataAndStore } from "../report/report.ts";
+import { withSpan } from "../tracing.ts";
 import { DataStore } from "./data-store.ts";
 import {
   getCompleteHourlyTemperatureDates,
@@ -14,18 +15,15 @@ import {
   loadStroemIfNeeded,
 } from "./loader.ts";
 
-const tracer = trace.getTracer("energi-extractor");
-
 async function handleFailure(
   label: string,
   fn: () => Promise<void>,
 ): Promise<void> {
-  await tracer.startActiveSpan(label, async (span) => {
+  await withSpan(label, async (span) => {
     const maxAttempts = 2;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         await fn();
-        span.end();
         return;
       } catch (e) {
         logger.warn(
@@ -36,7 +34,6 @@ async function handleFailure(
     }
     logger.error(`${label}: gave up after ${maxAttempts} attempts`);
     span.setStatus({ code: SpanStatusCode.ERROR, message: "max attempts" });
-    span.end();
   });
 }
 
@@ -52,23 +49,11 @@ async function iteration() {
 
   const previousDays = datesInRange(firstDate, lastDate);
 
-  const data = await tracer.startActiveSpan("load-data", async (span) => {
-    try {
-      return await dataStore.load();
-    } finally {
-      span.end();
-    }
-  });
+  const data = await withSpan("load-data", () => dataStore.load());
 
-  const completeTemperatureDates = tracer.startActiveSpan(
+  const completeTemperatureDates = withSpan(
     "compute-complete-temperature-dates",
-    (span) => {
-      try {
-        return getCompleteHourlyTemperatureDates(data);
-      } finally {
-        span.end();
-      }
-    },
+    () => getCompleteHourlyTemperatureDates(data),
   );
 
   for (const date of previousDays) {
@@ -97,32 +82,14 @@ async function iteration() {
     loadFjernvarmeIfNeeded(data, previousDays[0]!, previousDays.at(-1)!),
   );
 
-  await tracer.startActiveSpan("save-data", async (span) => {
-    try {
-      await dataStore.save(data);
-    } finally {
-      span.end();
-    }
-  });
+  await withSpan("save-data", () => dataStore.save(data));
 
-  await tracer.startActiveSpan("generate-report", async (span) => {
-    try {
-      await generateReportDataAndStore(data);
-    } finally {
-      span.end();
-    }
-  });
+  await withSpan("generate-report", () => generateReportDataAndStore(data));
 }
 
 while (true) {
   logger.info("Running iteration");
-  await tracer.startActiveSpan("iteration", async (span) => {
-    try {
-      await iteration();
-    } finally {
-      span.end();
-    }
-  });
+  await withSpan("iteration", () => iteration());
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
