@@ -54,6 +54,7 @@ node src/cli/{nordpool,stroem,fjernvarme,temperatur}.ts [DATE [DATE]]
 ## Tech stack
 
 - TypeScript 5 (strict), Node 24 (native TS type stripping — no enums, namespaces, or parameter properties)
+- Use `.ts`/`.tsx` extensions in imports (not `.js`), use `type` keyword for type-only imports
 - pnpm 10 workspaces
 - React 19, Recharts 3, Vite 7
 - Vitest for testing

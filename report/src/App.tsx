@@ -17,12 +17,12 @@ import {
   YAxis,
   ZAxis,
 } from "recharts";
-import { trendlineTemperatureLowerThan } from "@blindern/energi-extractor/src/report/constants.js";
+import { trendlineTemperatureLowerThan } from "@blindern/energi-extractor/src/report/constants.ts";
 import {
-  UsagePrice,
+  type UsagePrice,
   pricesConfig,
-} from "@blindern/energi-extractor/src/report/prices.js";
-import { generateReportData } from "@blindern/energi-extractor/src/report/report.js";
+} from "@blindern/energi-extractor/src/report/prices.ts";
+import { generateReportData } from "@blindern/energi-extractor/src/report/report.ts";
 
 function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;
