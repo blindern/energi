@@ -13,4 +13,4 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter ./extractor depl
 
 FROM base
 COPY --from=build /usr/src/app/pruned .
-CMD ["pnpm", "start"]
+CMD ["./node_modules/.bin/tsx", "--import", "./src/instrumentation.ts", "--experimental-loader=@opentelemetry/instrumentation/hook.mjs", "src/service/service.ts"]
