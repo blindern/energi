@@ -17,8 +17,7 @@ export async function getDailyData(year: number): Promise<DayWithMean[]> {
   );
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
   }
 
   const responseJson = (await response.json()) as any;
@@ -50,8 +49,7 @@ export async function getHourlyData(
   );
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
   }
 
   const responseJson = (await response.json()) as any;

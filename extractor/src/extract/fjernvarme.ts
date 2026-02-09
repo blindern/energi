@@ -15,17 +15,14 @@ export async function getAccessToken(
   });
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
   }
 
   const responseJson = (await response.json()) as any;
   const accessToken = responseJson.accessToken;
 
   if (accessToken == null) {
-    console.log(response);
-    console.log(responseJson);
-    throw new Error("Missing accessToken in response");
+    throw new Error(`Missing accessToken in response. Keys: ${Object.keys(responseJson).join(", ")}`);
   }
 
   return accessToken;
@@ -58,8 +55,7 @@ export async function getHourlyData({
   });
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${url}`);
   }
 
   if (response.status == 204) {
@@ -70,9 +66,7 @@ export async function getHourlyData({
   const fileContents = responseJson.fileContents;
 
   if (fileContents == null) {
-    console.log(response);
-    console.log(responseJson);
-    throw new Error("Unexpected response");
+    throw new Error(`Missing fileContents in response. Keys: ${Object.keys(responseJson).join(", ")}`);
   }
 
   const csvData = Buffer.from(fileContents, "base64").toString();
@@ -94,8 +88,7 @@ function parseCsvData(csvData: string): HourUsage[] {
 
   const firstLine = lines[0]!.split(";");
   if (firstLine[0] !== "Tid" || firstLine[1] !== "Forbruk [kWh]") {
-    console.log(csvData);
-    throw new Error("Unexpected csv data");
+    throw new Error(`Unexpected csv header: ${firstLine.join(";").slice(0, 200)}`);
   }
 
   const result: HourUsage[] = [];

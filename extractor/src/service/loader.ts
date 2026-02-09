@@ -1,5 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
+import { logger } from "../logger.js";
 import {
   ELVIA_CONTRACT_LIST,
   ELVIA_CUSTOMER_ID,
@@ -65,7 +66,7 @@ export async function loadNordpoolIfNeeded(
     return;
   }
 
-  console.log(`Loading nordpool data for ${date}`);
+  logger.info({ date: dateFormatted }, "Loading nordpool data");
 
   const nordpoolData: DataNordpoolPriceHour[] = (
     await getNordpoolData(date)
@@ -105,7 +106,7 @@ export async function loadHourlyTemperatureIfNeeded(
     }
   }
 
-  console.log(`Loading hourly temperature data for ${date}`);
+  logger.info({ date: dateFormatted }, "Loading hourly temperature data");
 
   const temperatureData: DataTemperatureHour[] = (
     await getTemperatureHourlyData(date)
@@ -151,7 +152,7 @@ export async function loadDailyTemperatureIfNeeded(
       continue;
     }
 
-    console.log(`Loading daily temperature for ${year}`);
+    logger.info({ year }, "Loading daily temperature");
 
     const dataToStore: DataTemperatureDay[] = (
       await getTemperatureDailyData(year)
@@ -233,7 +234,7 @@ export async function loadStroemIfNeeded(
     return;
   }
 
-  console.log("Loading data for strøm");
+  logger.info("Loading data for stroem");
 
   const accessToken = await getAccessTokenFromCredentials({
     email: ELVIA_EMAIL,
@@ -281,7 +282,7 @@ export async function loadFjernvarmeIfNeeded(
     return;
   }
 
-  console.log("Loading data for fjernvarme");
+  logger.info("Loading data for fjernvarme");
 
   const accessToken = await getAccessToken(
     FJERNVARME_USERNAME,

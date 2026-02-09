@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.js";
 import { datesInRange } from "../dates.js";
+import { logger } from "../logger.js";
 import { generateReportDataAndStore } from "../report/report.js";
 import { DataStore } from "./data-store.js";
 import {
@@ -11,20 +12,20 @@ import {
   loadStroemIfNeeded,
 } from "./loader.js";
 
-async function handleFailure(fn: () => Promise<void>): Promise<void> {
-  let tokens = 2;
-
-  while (tokens > 0) {
+async function handleFailure(
+  label: string,
+  fn: () => Promise<void>,
+): Promise<void> {
+  const maxAttempts = 2;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      tokens--;
       await fn();
       return;
     } catch (e) {
-      console.warn(`Failed: ${e}`);
+      logger.warn({ err: e, attempt, maxAttempts }, `${label}: attempt failed`);
     }
   }
-
-  console.warn("Gave up retrying - ignoring failure");
+  logger.error(`${label}: gave up after ${maxAttempts} attempts`);
 }
 
 const dataStore = new DataStore(DATA_FILE);
@@ -42,27 +43,29 @@ async function iteration() {
   const data = await dataStore.load();
 
   for (const date of previousDays) {
-    await handleFailure(() => loadNordpoolIfNeeded(data, date));
-    await handleFailure(() => loadHourlyTemperatureIfNeeded(data, date));
+    await handleFailure("nordpool", () => loadNordpoolIfNeeded(data, date));
+    await handleFailure("hourly-temperature", () =>
+      loadHourlyTemperatureIfNeeded(data, date),
+    );
   }
 
   // Spot prices tomorrow.
   if (now.hour >= 13) {
-    await handleFailure(() =>
-      loadNordpoolIfNeeded(data, lastDate.add({ days: 1 }))
+    await handleFailure("nordpool-tomorrow", () =>
+      loadNordpoolIfNeeded(data, lastDate.add({ days: 1 })),
     );
   }
 
-  await handleFailure(() =>
-    loadDailyTemperatureIfNeeded(data, previousDays[0]!, previousDays.at(-2)!)
+  await handleFailure("daily-temperature", () =>
+    loadDailyTemperatureIfNeeded(data, previousDays[0]!, previousDays.at(-2)!),
   );
 
-  await handleFailure(() =>
-    loadStroemIfNeeded(data, previousDays[0]!, previousDays.at(-1)!)
+  await handleFailure("stroem", () =>
+    loadStroemIfNeeded(data, previousDays[0]!, previousDays.at(-1)!),
   );
 
-  await handleFailure(() =>
-    loadFjernvarmeIfNeeded(data, previousDays[0]!, previousDays.at(-1)!)
+  await handleFailure("fjernvarme", () =>
+    loadFjernvarmeIfNeeded(data, previousDays[0]!, previousDays.at(-1)!),
   );
 
   await dataStore.save(data);
@@ -71,7 +74,7 @@ async function iteration() {
 }
 
 while (true) {
-  console.log("Running iteration");
+  logger.info("Running iteration");
   await iteration();
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
@@ -91,7 +94,7 @@ while (true) {
     });
 
   const delaySeconds = now.until(nextIteration).total("seconds");
-  console.log(`Sleeping until ${nextIteration.toString()} (${delaySeconds} s)`);
+  logger.info({ delaySeconds }, `Sleeping until ${nextIteration.toString()}`);
 
   await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
 }

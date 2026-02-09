@@ -106,8 +106,7 @@ async function getInitialLoginState(): Promise<{
   });
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
   }
 
   const cookies = parseSetCookie(response.headers.getSetCookie() ?? []);
@@ -117,8 +116,7 @@ async function getInitialLoginState(): Promise<{
     /name="__RequestVerificationToken" type="hidden" value="([^"]+)"/
   );
   if (!csrfTokenMatch) {
-    console.log(textContent);
-    throw new Error("Failed to find csrf token");
+    throw new Error(`Failed to find csrf token in response from ${response.url}`);
   }
 
   return {
@@ -160,8 +158,7 @@ async function getValidLoginState({
   });
 
   if (response.status !== 302) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Expected 302 redirect, got ${response.status} from ${response.url}`);
   }
 
   return {
@@ -211,19 +208,17 @@ async function getAuthorizeCode({
   );
 
   if (response.status !== 302) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Expected 302 redirect, got ${response.status} from ${response.url}`);
   }
 
   const location = response.headers.get("location");
   if (location == null) {
-    throw new Error("Missing location");
+    throw new Error("Missing location header from authorize callback");
   }
 
   const queryStringPos = location.indexOf("?");
   if (queryStringPos === -1) {
-    console.log(location);
-    throw new Error("Missing query string");
+    throw new Error(`Missing query string in redirect location: ${location.slice(0, 200)}`);
   }
 
   const parts = Object.fromEntries(
@@ -265,13 +260,11 @@ async function getTokenFromCode({
   });
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
   }
 
   if (!response.headers.get("content-type")?.includes("application/json")) {
-    console.log(response);
-    throw new Error("Unexpected content type");
+    throw new Error(`Unexpected content type: ${response.headers.get("content-type")} from ${response.url}`);
   }
 
   const responseJson = (await response.json()) as any;
@@ -332,13 +325,11 @@ export async function getMeterValues({
   });
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${url}`);
   }
 
   if (!response.headers.get("content-type")?.includes("application/json")) {
-    console.log(response);
-    throw new Error("Unexpected content type");
+    throw new Error(`Unexpected content type: ${response.headers.get("content-type")} from ${url}`);
   }
 
   const responseJson = (await response.json()) as MeterValuesResponse;

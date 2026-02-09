@@ -17,8 +17,7 @@ export async function getNordpoolData(
   const response = await fetch(url);
 
   if (!response.ok) {
-    console.log(response);
-    throw new Error("Unexpected response");
+    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
   }
 
   if (response.status === 204) {
@@ -27,8 +26,7 @@ export async function getNordpoolData(
   }
 
   if (!response.headers.get("content-type")?.includes("application/json")) {
-    console.log(response);
-    throw new Error("Unexpected content type");
+    throw new Error(`Unexpected content type: ${response.headers.get("content-type")} from ${response.url}`);
   }
 
   const responseJson = (await response.json()) as {
@@ -59,8 +57,7 @@ export async function getNordpoolData(
     responseJson.areaStates[0]?.state !== "Final" ||
     responseJson.areaStates[0]?.areas[0] !== "NO1"
   ) {
-    console.log(responseJson);
-    throw new Error("Not final NO1 data");
+    throw new Error(`Not final NO1 data: ${JSON.stringify(responseJson.areaStates).slice(0, 200)}`);
   }
 
   const result: HourPrice[] = [];
@@ -78,21 +75,22 @@ export async function getNordpoolData(
   */
 
   for (const entry of responseJson.multiIndexEntries) {
-    const timeStart = Temporal.Instant.from(entry.deliveryStart);
-    if (!timeStart) {
-      console.log(entry);
-      throw new Error("Couldn't parse deliveryStart");
+    let timeStart: Temporal.Instant;
+    try {
+      timeStart = Temporal.Instant.from(entry.deliveryStart);
+    } catch {
+      throw new Error(`Couldn't parse deliveryStart: ${JSON.stringify(entry).slice(0, 200)}`);
     }
 
-    const timeEnd = Temporal.Instant.from(entry.deliveryEnd);
-    if (!timeEnd) {
-      console.log(entry);
-      throw new Error("Couldn't parse deliveryEnd");
+    let timeEnd: Temporal.Instant;
+    try {
+      timeEnd = Temporal.Instant.from(entry.deliveryEnd);
+    } catch {
+      throw new Error(`Couldn't parse deliveryEnd: ${JSON.stringify(entry).slice(0, 200)}`);
     }
 
     if (timeStart.until(timeEnd).total("hours") !== 1) {
-      console.log(entry);
-      throw new Error("Expected exactly one hour");
+      throw new Error(`Expected exactly one hour: ${JSON.stringify(entry).slice(0, 200)}`);
     }
 
     const price = entry.entryPerArea["NO1"];
