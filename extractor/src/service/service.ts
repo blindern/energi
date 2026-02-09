@@ -1,3 +1,4 @@
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.js";
 import { datesInRange } from "../dates.js";
@@ -12,20 +13,30 @@ import {
   loadStroemIfNeeded,
 } from "./loader.js";
 
+const tracer = trace.getTracer("energi-extractor");
+
 async function handleFailure(
   label: string,
   fn: () => Promise<void>,
 ): Promise<void> {
-  const maxAttempts = 2;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      await fn();
-      return;
-    } catch (e) {
-      logger.warn({ err: e, attempt, maxAttempts }, `${label}: attempt failed`);
+  await tracer.startActiveSpan(label, async (span) => {
+    const maxAttempts = 2;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await fn();
+        span.end();
+        return;
+      } catch (e) {
+        logger.warn(
+          { err: e, attempt, maxAttempts },
+          `${label}: attempt failed`,
+        );
+      }
     }
-  }
-  logger.error(`${label}: gave up after ${maxAttempts} attempts`);
+    logger.error(`${label}: gave up after ${maxAttempts} attempts`);
+    span.setStatus({ code: SpanStatusCode.ERROR, message: "max attempts" });
+    span.end();
+  });
 }
 
 const dataStore = new DataStore(DATA_FILE);
@@ -40,7 +51,13 @@ async function iteration() {
 
   const previousDays = datesInRange(firstDate, lastDate);
 
-  const data = await dataStore.load();
+  const data = await tracer.startActiveSpan("load-data", async (span) => {
+    try {
+      return await dataStore.load();
+    } finally {
+      span.end();
+    }
+  });
 
   for (const date of previousDays) {
     await handleFailure("nordpool", () => loadNordpoolIfNeeded(data, date));
@@ -68,14 +85,32 @@ async function iteration() {
     loadFjernvarmeIfNeeded(data, previousDays[0]!, previousDays.at(-1)!),
   );
 
-  await dataStore.save(data);
+  await tracer.startActiveSpan("save-data", async (span) => {
+    try {
+      await dataStore.save(data);
+    } finally {
+      span.end();
+    }
+  });
 
-  await generateReportDataAndStore(data);
+  await tracer.startActiveSpan("generate-report", async (span) => {
+    try {
+      await generateReportDataAndStore(data);
+    } finally {
+      span.end();
+    }
+  });
 }
 
 while (true) {
   logger.info("Running iteration");
-  await iteration();
+  await tracer.startActiveSpan("iteration", async (span) => {
+    try {
+      await iteration();
+    } finally {
+      span.end();
+    }
+  });
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
