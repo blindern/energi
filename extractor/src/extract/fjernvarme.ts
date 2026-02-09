@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { HourUsage } from "./common.js";
+import type { HourUsage } from "./common.ts";
 
 export async function getAccessToken(
   username: string,

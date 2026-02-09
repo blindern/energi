@@ -4,9 +4,9 @@ import {
   FJERNVARME_KUNDE_ID,
   FJERNVARME_PASSWORD,
   FJERNVARME_USERNAME,
-} from "../config.js";
-import { getAccessToken, getHourlyData } from "../extract/fjernvarme.js";
-import { generateHourUsageCsvRows } from "../format.js";
+} from "../config.ts";
+import { getAccessToken, getHourlyData } from "../extract/fjernvarme.ts";
+import { generateHourUsageCsvRows } from "../format.ts";
 
 const accessToken = await getAccessToken(
   FJERNVARME_USERNAME,

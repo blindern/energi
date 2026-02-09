@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { getHourlyData } from "../extract/temperatur.js";
-import { formatHourForCsv, formatNumberForCsv } from "../format.js";
+import { getHourlyData } from "../extract/temperatur.ts";
+import { formatHourForCsv, formatNumberForCsv } from "../format.ts";
 
 if (process.argv.length < 3) {
   process.stderr.write("Syntax: program <date>");

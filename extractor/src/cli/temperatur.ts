@@ -1,5 +1,5 @@
-import { getDailyData } from "../extract/temperatur.js";
-import { formatNumberForCsv } from "../format.js";
+import { getDailyData } from "../extract/temperatur.ts";
+import { formatNumberForCsv } from "../format.ts";
 
 const data = await getDailyData(2022);
 

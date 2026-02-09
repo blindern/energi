@@ -1,17 +1,17 @@
 import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { Temporal } from "@js-temporal/polyfill";
-import { DATA_FILE } from "../config.js";
-import { datesInRange } from "../dates.js";
-import { logger } from "../logger.js";
-import { generateReportDataAndStore } from "../report/report.js";
-import { DataStore } from "./data-store.js";
+import { DATA_FILE } from "../config.ts";
+import { datesInRange } from "../dates.ts";
+import { logger } from "../logger.ts";
+import { generateReportDataAndStore } from "../report/report.ts";
+import { DataStore } from "./data-store.ts";
 import {
   loadDailyTemperatureIfNeeded,
   loadFjernvarmeIfNeeded,
   loadHourlyTemperatureIfNeeded,
   loadNordpoolIfNeeded,
   loadStroemIfNeeded,
-} from "./loader.js";
+} from "./loader.ts";
 
 const tracer = trace.getTracer("energi-extractor");
 

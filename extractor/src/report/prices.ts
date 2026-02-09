@@ -1,12 +1,12 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
-import { Data } from "../service/data-store.js";
-import { roundTwoDec, zeroForNaN } from "./helpers.js";
+import type { Data } from "../service/data-store.ts";
+import { roundTwoDec, zeroForNaN } from "./helpers.ts";
 import {
   dateHourIndexer,
-  IndexedData,
+  type IndexedData,
   yearMonthIndexer,
-} from "./indexed-data.js";
+} from "./indexed-data.ts";
 
 interface PriceConfigItem {
   mva: 0 | 0.25;

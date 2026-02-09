@@ -1,15 +1,15 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
-import {
+import type {
   Data,
   DataNordpoolPriceHour,
   DataPowerUsageHour,
   DataTemperatureHour,
-} from "../service/data-store.js";
+} from "../service/data-store.ts";
 import {
   stroemFakturaPriceByMonthByMeterName,
   stroemKraftMonthlyAverage,
-} from "./prices.js";
+} from "./prices.ts";
 
 export interface IndexedData {
   lastDate: Temporal.PlainDate;

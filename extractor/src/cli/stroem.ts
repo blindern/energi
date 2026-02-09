@@ -5,15 +5,15 @@ import {
   ELVIA_CUSTOMER_ID,
   ELVIA_EMAIL,
   ELVIA_PASSWORD,
-} from "../config.js";
-import { isDateInRange } from "../dates.js";
-import { HourUsage } from "../extract/common.js";
+} from "../config.ts";
+import { isDateInRange } from "../dates.ts";
+import type { HourUsage } from "../extract/common.ts";
 import {
   getAccessTokenFromCredentials,
   getMeterValues,
   parseMeterValues,
-} from "../extract/stroem.js";
-import { generateHourUsageCsvRows } from "../format.js";
+} from "../extract/stroem.ts";
+import { generateHourUsageCsvRows } from "../format.ts";
 
 if (process.argv.length < 4) {
   process.stderr.write("Syntax: program <first-date> <last-date>");

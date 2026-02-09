@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as crypto from "crypto";
-import { HourUsage } from "./common.js";
+import type { HourUsage } from "./common.ts";
 
 interface Consumption {
   value: number;

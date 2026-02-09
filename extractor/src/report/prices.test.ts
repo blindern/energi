@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { expect, test } from "vitest";
-import { fjernvarmeRabatt } from "./prices.js";
+import { fjernvarmeRabatt } from "./prices.ts";
 
 test("fjernvarmeRabatt", () => {
   const month09 = Temporal.PlainYearMonth.from("2022-09");

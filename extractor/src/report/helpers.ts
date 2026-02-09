@@ -1,7 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
-import { hoursInADay } from "./constants.js";
-import { dateHourIndexer, IndexedData } from "./indexed-data.js";
+import { hoursInADay } from "./constants.ts";
+import { dateHourIndexer, type IndexedData } from "./indexed-data.ts";
 
 export function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;

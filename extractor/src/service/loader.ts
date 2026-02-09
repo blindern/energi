@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
-import { logger } from "../logger.js";
+import { logger } from "../logger.ts";
 import {
   ELVIA_CONTRACT_LIST,
   ELVIA_CUSTOMER_ID,
@@ -10,30 +10,30 @@ import {
   FJERNVARME_KUNDE_ID,
   FJERNVARME_PASSWORD,
   FJERNVARME_USERNAME,
-} from "../config.js";
-import { datesInRange, isDateInRange } from "../dates.js";
-import { HourUsage } from "../extract/common.js";
+} from "../config.ts";
+import { datesInRange, isDateInRange } from "../dates.ts";
+import type { HourUsage } from "../extract/common.ts";
 import {
   getAccessToken,
   getHourlyData as getFjernvarmeHourlyData,
-} from "../extract/fjernvarme.js";
-import { getNordpoolData } from "../extract/nordpool.js";
+} from "../extract/fjernvarme.ts";
+import { getNordpoolData } from "../extract/nordpool.ts";
 import {
   getAccessTokenFromCredentials,
   getMeterValues,
   parseMeterValues,
-} from "../extract/stroem.js";
+} from "../extract/stroem.ts";
 import {
   getDailyData as getTemperatureDailyData,
   getHourlyData as getTemperatureHourlyData,
-} from "../extract/temperatur.js";
-import {
+} from "../extract/temperatur.ts";
+import type {
   Data,
   DataNordpoolPriceHour,
   DataPowerUsageHour,
   DataTemperatureDay,
   DataTemperatureHour,
-} from "./data-store.js";
+} from "./data-store.ts";
 
 interface ObjWithDateHour {
   date: string;

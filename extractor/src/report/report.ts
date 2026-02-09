@@ -2,34 +2,34 @@ import { Temporal } from "@js-temporal/polyfill";
 import * as fs from "fs/promises";
 import * as R from "ramda";
 import { createTrend } from "trendline";
-import { REPORT_FILE } from "../config.js";
-import { datesInRange } from "../dates.js";
-import {
+import { REPORT_FILE } from "../config.ts";
+import { datesInRange } from "../dates.ts";
+import type {
   Data,
   DataPowerUsageHour,
   DataTemperatureDay,
-} from "../service/data-store.js";
+} from "../service/data-store.ts";
 import {
   dayNames,
   hoursInADay,
   trendlineTemperatureLowerThan,
-} from "./constants.js";
+} from "./constants.ts";
 import {
   averageSpotprice,
   averageTemperature,
   nullForZero,
   roundTwoDec,
   zeroForNaN,
-} from "./helpers.js";
-import { IndexedData, dateHourIndexer, indexData } from "./indexed-data.js";
+} from "./helpers.ts";
+import { type IndexedData, dateHourIndexer, indexData } from "./indexed-data.ts";
 import {
-  UsagePrice,
+  type UsagePrice,
   calculateFjernvarmeHourlyPrice,
   calculateHourlyPrice,
   calculateStroemHourlyPrice,
   flattenPrices,
   sumPrice,
-} from "./prices.js";
+} from "./prices.ts";
 
 // The official types are not correct.
 declare module "trendline" {

@@ -34,7 +34,10 @@ export interface Data {
 }
 
 export class DataStore {
-  constructor(private dataFile: string) {}
+  private dataFile: string;
+  constructor(dataFile: string) {
+    this.dataFile = dataFile;
+  }
 
   async load(): Promise<Data> {
     try {

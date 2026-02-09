@@ -1,6 +1,6 @@
-import { DATA_FILE } from "../config.js";
-import { DataStore } from "../service/data-store.js";
-import { generateReportDataAndStore } from "./report.js";
+import { DATA_FILE } from "../config.ts";
+import { DataStore } from "../service/data-store.ts";
+import { generateReportDataAndStore } from "./report.ts";
 
 const dataStore = new DataStore(DATA_FILE);
 

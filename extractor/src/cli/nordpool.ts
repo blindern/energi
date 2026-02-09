@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { getNordpoolData } from "../extract/nordpool.js";
-import { formatHourForCsv, formatNumberForCsv } from "../format.js";
+import { getNordpoolData } from "../extract/nordpool.ts";
+import { formatHourForCsv, formatNumberForCsv } from "../format.ts";
 
 if (process.argv.length < 3) {
   process.stderr.write("Syntax: program <date>");
