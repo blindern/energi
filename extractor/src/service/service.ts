@@ -6,6 +6,7 @@ import { logger } from "../logger.ts";
 import { generateReportDataAndStore } from "../report/report.ts";
 import { DataStore } from "./data-store.ts";
 import {
+  getCompleteHourlyTemperatureDates,
   loadDailyTemperatureIfNeeded,
   loadFjernvarmeIfNeeded,
   loadHourlyTemperatureIfNeeded,
@@ -59,10 +60,21 @@ async function iteration() {
     }
   });
 
+  const completeTemperatureDates = tracer.startActiveSpan(
+    "compute-complete-temperature-dates",
+    (span) => {
+      try {
+        return getCompleteHourlyTemperatureDates(data);
+      } finally {
+        span.end();
+      }
+    },
+  );
+
   for (const date of previousDays) {
     await handleFailure("nordpool", () => loadNordpoolIfNeeded(data, date));
     await handleFailure("hourly-temperature", () =>
-      loadHourlyTemperatureIfNeeded(data, date),
+      loadHourlyTemperatureIfNeeded(data, date, completeTemperatureDates),
     );
   }
 

@@ -82,28 +82,34 @@ export async function loadNordpoolIfNeeded(
     .sort(compareDateAndHour);
 }
 
-export async function loadHourlyTemperatureIfNeeded(
-  data: Data,
-  date: Temporal.PlainDate
-): Promise<void> {
-  const dateFormatted = date.toString();
-
-  // Data from Yr ("one day") follows UTC time, while the data
-  // we store is in local timezone.
-
+/**
+ * Pre-compute which UTC dates have complete hourly temperature data.
+ * Call once before the loop, not per-day.
+ */
+export function getCompleteHourlyTemperatureDates(data: Data): Set<string> {
+  const completeDates = new Set<string>();
   for (const hourData of data.hourlyTemperature ?? []) {
     const utcDateTime = Temporal.PlainDate.from(hourData.date)
       .toPlainDateTime({ hour: hourData.hour })
       .toZonedDateTime("Europe/Oslo")
       .withTimeZone("UTC");
 
-    if (
-      utcDateTime.toPlainDate().toString() === dateFormatted &&
-      utcDateTime.hour === 23
-    ) {
-      // Got data for full day, nothing to load.
-      return;
+    if (utcDateTime.hour === 23) {
+      completeDates.add(utcDateTime.toPlainDate().toString());
     }
+  }
+  return completeDates;
+}
+
+export async function loadHourlyTemperatureIfNeeded(
+  data: Data,
+  date: Temporal.PlainDate,
+  completeDates: Set<string>,
+): Promise<void> {
+  const dateFormatted = date.toString();
+
+  if (completeDates.has(dateFormatted)) {
+    return;
   }
 
   logger.info({ date: dateFormatted }, "Loading hourly temperature data");
