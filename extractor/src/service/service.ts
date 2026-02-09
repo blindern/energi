@@ -1,4 +1,4 @@
-import { SpanStatusCode } from "@opentelemetry/api";
+import { type AttributeValue, SpanStatusCode } from "@opentelemetry/api";
 import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.ts";
 import { datesInRange } from "../dates.ts";
@@ -18,8 +18,10 @@ import {
 async function handleFailure(
   label: string,
   fn: () => Promise<void>,
+  attributes?: Record<string, AttributeValue>,
 ): Promise<void> {
   await withSpan(label, async (span) => {
+    if (attributes) span.setAttributes(attributes);
     const maxAttempts = 2;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -49,24 +51,39 @@ async function iteration() {
 
   const previousDays = datesInRange(firstDate, lastDate);
 
-  const data = await withSpan("load-data", () => dataStore.load());
+  const data = await withSpan("load-data", async (span) => {
+    const result = await dataStore.load();
+    span.setAttribute("bytes", dataStore.lastBytes);
+    return result;
+  });
 
   const completeTemperatureDates = withSpan(
     "compute-complete-temperature-dates",
-    () => getCompleteHourlyTemperatureDates(data),
+    (span) => {
+      const dates = getCompleteHourlyTemperatureDates(data);
+      span.setAttribute("count", dates.size);
+      return dates;
+    },
   );
 
   for (const date of previousDays) {
-    await handleFailure("nordpool", () => loadNordpoolIfNeeded(data, date));
+    const dateStr = date.toString();
+    await handleFailure("nordpool", () =>
+      loadNordpoolIfNeeded(data, date),
+      { date: dateStr },
+    );
     await handleFailure("hourly-temperature", () =>
       loadHourlyTemperatureIfNeeded(data, date, completeTemperatureDates),
+      { date: dateStr },
     );
   }
 
   // Spot prices tomorrow.
   if (now.hour >= 13) {
-    await handleFailure("nordpool-tomorrow", () =>
-      loadNordpoolIfNeeded(data, lastDate.add({ days: 1 })),
+    const tomorrow = lastDate.add({ days: 1 });
+    await handleFailure("nordpool", () =>
+      loadNordpoolIfNeeded(data, tomorrow),
+      { date: tomorrow.toString() },
     );
   }
 
@@ -82,7 +99,10 @@ async function iteration() {
     loadFjernvarmeIfNeeded(data, previousDays[0]!, previousDays.at(-1)!),
   );
 
-  await withSpan("save-data", () => dataStore.save(data));
+  await withSpan("save-data", async (span) => {
+    await dataStore.save(data);
+    span.setAttribute("bytes", dataStore.lastBytes);
+  });
 
   await withSpan("generate-report", () => generateReportDataAndStore(data));
 }

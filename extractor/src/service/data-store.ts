@@ -39,19 +39,24 @@ export class DataStore {
     this.dataFile = dataFile;
   }
 
+  lastBytes = 0;
+
   async load(): Promise<Data> {
     try {
       await fs.stat(this.dataFile);
     } catch (e) {
+      this.lastBytes = 0;
       return {};
     }
 
-    const content = (await fs.readFile(this.dataFile)).toString();
-    return JSON.parse(content);
+    const content = await fs.readFile(this.dataFile);
+    this.lastBytes = content.byteLength;
+    return JSON.parse(content.toString());
   }
 
   async save(data: Data): Promise<void> {
     const content = JSON.stringify(data, undefined, "  ");
+    this.lastBytes = Buffer.byteLength(content);
     await fs.writeFile(this.dataFile, content);
   }
 }

@@ -4,6 +4,7 @@ import * as R from "ramda";
 import { createTrend } from "trendline";
 import { REPORT_FILE } from "../config.ts";
 import { datesInRange } from "../dates.ts";
+import { withSpan } from "../tracing.ts";
 import type {
   Data,
   DataPowerUsageHour,
@@ -684,7 +685,7 @@ function createEt(data: ReturnType<typeof generateEnergyTemperatureReport>) {
 }
 
 export async function generateReportData(data: Data) {
-  const indexedData = indexData(data);
+  const indexedData = withSpan("index-data", () => indexData(data));
 
   const haveSpotpriceTomorrow =
     indexedData.spotpriceByHour[
@@ -715,71 +716,76 @@ export async function generateReportData(data: Data) {
       .subtract({ days: 1 })
   );
 
-  const energyTemperatureReport = generateEnergyTemperatureReport(
-    data,
-    indexedData,
-    Temporal.PlainDate.from("2021-07-01"),
-    Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-      days: 1,
-    })
-  );
-
-  const energyTemperatureReportFjernvarme =
-    generateEnergyTemperatureReportFjernvarme(
-      data,
-      indexedData,
-      Temporal.PlainDate.from("2021-07-01"),
-      Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-        days: 1,
-      })
-    );
-
   const result = {
     monthly: {
-      rows: generateMonthlyReport(
-        data,
-        indexedData,
-        Temporal.PlainDate.from("2018-01-01"),
-        Temporal.Now.plainDateISO("Europe/Oslo").with({
-          month: 12,
-          day: 31,
-        })
+      rows: withSpan("monthly-report", () =>
+        generateMonthlyReport(
+          data,
+          indexedData,
+          Temporal.PlainDate.from("2018-01-01"),
+          Temporal.Now.plainDateISO("Europe/Oslo").with({
+            month: 12,
+            day: 31,
+          })
+        ),
       ),
     },
     daily: {
-      rows: generateDailyReport(
-        data,
-        indexedData,
-        Temporal.PlainDate.from("2021-01-01"),
-        Temporal.Now.plainDateISO("Europe/Oslo").with({
-          month: 12,
-          day: 31,
-        })
+      rows: withSpan("daily-report", () =>
+        generateDailyReport(
+          data,
+          indexedData,
+          Temporal.PlainDate.from("2021-01-01"),
+          Temporal.Now.plainDateISO("Europe/Oslo").with({
+            month: 12,
+            day: 31,
+          })
+        ),
       ),
     },
     hourly: {
-      rows: generateHourlyReport(
-        data,
-        indexedData,
-        Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: 6,
-        }),
-        Temporal.Now.plainDateISO("Europe/Oslo"),
-        Temporal.Now.plainDateTimeISO("Europe/Oslo")
+      rows: withSpan("hourly-report", () =>
+        generateHourlyReport(
+          data,
+          indexedData,
+          Temporal.Now.plainDateISO("Europe/Oslo").subtract({
+            days: 6,
+          }),
+          Temporal.Now.plainDateISO("Europe/Oslo"),
+          Temporal.Now.plainDateTimeISO("Europe/Oslo")
+        ),
       ),
     },
-    et: createEt(energyTemperatureReport),
-    etFjernvarme: createEt(energyTemperatureReportFjernvarme),
-    prices: {
-      rows: generatePriceReport(
+    et: withSpan("energy-temperature", () => {
+      const report = generateEnergyTemperatureReport(
         data,
         indexedData,
-        Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: haveSpotpriceTomorrow ? 9 : 10,
-        }),
-        Temporal.Now.plainDateISO("Europe/Oslo").add({
-          days: haveSpotpriceTomorrow ? 1 : 0,
-        })
+        Temporal.PlainDate.from("2021-07-01"),
+        Temporal.Now.plainDateISO("Europe/Oslo").subtract({ days: 1 })
+      );
+      return createEt(report);
+    }),
+    etFjernvarme: withSpan("energy-temperature-fjernvarme", () => {
+      const report = generateEnergyTemperatureReportFjernvarme(
+        data,
+        indexedData,
+        Temporal.PlainDate.from("2021-07-01"),
+        Temporal.Now.plainDateISO("Europe/Oslo").subtract({ days: 1 })
+      );
+      return createEt(report);
+    }),
+    prices: {
+      rows: withSpan("price-report", () =>
+        generatePriceReport(
+          data,
+          indexedData,
+          Temporal.Now.plainDateISO("Europe/Oslo").subtract({
+            days: haveSpotpriceTomorrow ? 9 : 10,
+          }),
+          Temporal.Now.plainDateISO("Europe/Oslo").add({
+            days: haveSpotpriceTomorrow ? 1 : 0,
+          })
+        ),
       ),
     },
     spotprices: {
@@ -794,7 +800,7 @@ export async function generateReportData(data: Data) {
           (indexedData.spotpriceByMonth[previousMonth.toString()] ?? NaN) * 100,
       },
     },
-    cost: {
+    cost: withSpan("cost-report", () => ({
       currentMonth: {
         yearMonth: currentMonth.toString(),
         cost: generateCostReport(data, indexedData, currentMonthDates),
@@ -803,8 +809,8 @@ export async function generateReportData(data: Data) {
         yearMonth: previousMonth.toString(),
         cost: generateCostReport(data, indexedData, previousMonthDates),
       },
-    },
-    table: {
+    })),
+    table: withSpan("table-report", () => ({
       yearlyToThisDate: {
         untilDayIncl: now.toPlainDate().toPlainMonthDay().toString(),
         data: generateYearlyTableReport(data, indexedData, {
@@ -814,7 +820,7 @@ export async function generateReportData(data: Data) {
       yearly: generateYearlyTableReport(data, indexedData),
       monthly: generateMonthlyTableReport(data, indexedData),
       lastDays: generateLastDaysTableReport(data, indexedData),
-    },
+    })),
   };
 
   return result;
@@ -823,5 +829,9 @@ export async function generateReportData(data: Data) {
 export async function generateReportDataAndStore(data: Data) {
   const result = await generateReportData(data);
 
-  await fs.writeFile(REPORT_FILE, JSON.stringify(result, undefined, "  "));
+  await withSpan("write-report", async (span) => {
+    const content = JSON.stringify(result, undefined, "  ");
+    span.setAttribute("bytes", Buffer.byteLength(content));
+    await fs.writeFile(REPORT_FILE, content);
+  });
 }
