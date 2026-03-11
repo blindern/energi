@@ -3,7 +3,7 @@ import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.ts";
 import { datesInRange } from "../dates.ts";
 import { logger } from "../logger.ts";
-import { generateReportDataAndStore } from "../report/report.ts";
+import { generateReportDataAndStore } from "../report/generate-and-store.ts";
 import { withSpan } from "../tracing.ts";
 import { DataStore } from "./data-store.ts";
 import {

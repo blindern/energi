@@ -1,8 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as fs from "fs/promises";
 import * as R from "ramda";
 import { createTrend } from "trendline";
-import { REPORT_FILE } from "../config.ts";
 import { datesInRange } from "../dates.ts";
 import { withSpan } from "../tracing.ts";
 import type {
@@ -826,12 +824,3 @@ export async function generateReportData(data: Data) {
   return result;
 }
 
-export async function generateReportDataAndStore(data: Data) {
-  const result = await generateReportData(data);
-
-  await withSpan("write-report", async (span) => {
-    const content = JSON.stringify(result, undefined, "  ");
-    span.setAttribute("bytes", Buffer.byteLength(content));
-    await fs.writeFile(REPORT_FILE, content);
-  });
-}
