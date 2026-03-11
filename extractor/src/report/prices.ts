@@ -178,6 +178,21 @@ const fjernvarmeNettleiePerKwhByMonth: Record<string, number | undefined> = {
   "2025-10": 0.269 * 1.25,
   "2025-11": 0.269 * 1.25,
   "2025-12": 0.269 * 1.25,
+  // https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/priser-fjernvarme/prismodell-for-fjernvarme-i-borettslag-og-sameier
+  // > Nettleie for 2026 er fastsatt til 27,73 øre/kWh
+  // > Alle priser eks. mva.
+  "2026-01": 0.2773 * 1.25,
+  "2026-02": 0.2773 * 1.25,
+  "2026-03": 0.2773 * 1.25,
+  "2026-04": 0.2773 * 1.25,
+  "2026-05": 0.2773 * 1.25,
+  "2026-06": 0.2773 * 1.25,
+  "2026-07": 0.2773 * 1.25,
+  "2026-08": 0.2773 * 1.25,
+  "2026-09": 0.2773 * 1.25,
+  "2026-10": 0.2773 * 1.25,
+  "2026-11": 0.2773 * 1.25,
+  "2026-12": 0.2773 * 1.25,
 };
 
 export function fjernvarmeRabatt(
