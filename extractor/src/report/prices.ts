@@ -242,10 +242,12 @@ export function fjernvarmeRabatt(
     return step;
   } else {
     // 2025-12-02: https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/endring-i-prismodellen-fra-1-november
-    // 5 % => 5.25 %
+    // 5 % => 5.25 %, cap at 77 øre eks mva, based on spotprice (not after strømstøtte)
 
-    const threshold = 0.5 * 1.25;
-    const step = -Math.max(0, priceWithSupport - threshold) * 0.0525;
+    const threshold1 = 0.5 * 1.25;
+    const threshold2 = 0.77 * 1.25;
+    const step =
+      -Math.max(0, Math.min(threshold2, spotpriceMonth) - threshold1) * 0.0525;
 
     return step;
   }
@@ -960,22 +962,17 @@ export function calculateFjernvarmeHourlyPriceFrom2025Jan(props: {
 
   const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
-  const isNorgespris = props.date >= "2025-11";
-
   const variableByKwh = multiplyWithUsage(props.usageKwh, {
     Kraft: spotpriceMonth,
-    Rabatt: isNorgespris
-      ? 0
-      : fjernvarmeRabatt(
-          plainDate.toPlainYearMonth(),
-          spotpriceMonth,
-          priceSupport
-        ),
+    Rabatt: fjernvarmeRabatt(
+      plainDate.toPlainYearMonth(),
+      spotpriceMonth,
+      priceSupport
+    ),
     "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
     Nettleie: fjernvarmeNettleiePerKwhByMonth[yearMonth] ?? NaN,
     Forbruksavgift: forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
-    Strømstøtte: isNorgespris ? 0 : -priceSupport,
-    Norgespris: isNorgespris ? 0.4 * 1.25 - spotpriceMonth : 0,
+    Strømstøtte: -priceSupport,
   });
 
   if (
@@ -985,7 +982,6 @@ export function calculateFjernvarmeHourlyPriceFrom2025Jan(props: {
   ) {
     const factor = props.subsidizedKwh / props.usageKwh;
     if (variableByKwh.Strømstøtte) variableByKwh.Strømstøtte *= factor;
-    if (variableByKwh.Norgespris) variableByKwh.Norgespris *= factor;
   }
 
   return {
