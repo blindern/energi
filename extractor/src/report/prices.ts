@@ -492,18 +492,18 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2025-12": 0.1253 * 1.25, // Assumption.
   // https://www.regjeringen.no/no/aktuelt/foreslar-reduserte-stromutgifter/id3124548/
   // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2026/id3121982/
-  "2026-01": 0.0418 * 1.25, // Assumption.
-  "2026-02": 0.0418 * 1.25, // Assumption.
-  "2026-03": 0.0418 * 1.25, // Assumption.
-  "2026-04": 0.0418 * 1.25, // Assumption.
-  "2026-05": 0.0418 * 1.25, // Assumption.
-  "2026-06": 0.0418 * 1.25, // Assumption.
-  "2026-07": 0.0418 * 1.25, // Assumption.
-  "2026-08": 0.0418 * 1.25, // Assumption.
-  "2026-09": 0.0418 * 1.25, // Assumption.
-  "2026-10": 0.0418 * 1.25, // Assumption.
-  "2026-11": 0.0418 * 1.25, // Assumption.
-  "2026-12": 0.0418 * 1.25, // Assumption.
+  "2026-01": 0.0713 * 1.25, // Assumption.
+  "2026-02": 0.0713 * 1.25, // Assumption.
+  "2026-03": 0.0713 * 1.25, // Assumption.
+  "2026-04": 0.0713 * 1.25, // Assumption.
+  "2026-05": 0.0713 * 1.25, // Assumption.
+  "2026-06": 0.0713 * 1.25, // Assumption.
+  "2026-07": 0.0713 * 1.25, // Assumption.
+  "2026-08": 0.0713 * 1.25, // Assumption.
+  "2026-09": 0.0713 * 1.25, // Assumption.
+  "2026-10": 0.0713 * 1.25, // Assumption.
+  "2026-11": 0.0713 * 1.25, // Assumption.
+  "2026-12": 0.0713 * 1.25, // Assumption.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
