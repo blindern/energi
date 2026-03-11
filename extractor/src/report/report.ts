@@ -33,6 +33,16 @@ import {
   sumPrice,
 } from "./prices.ts";
 
+const meterDisplayNames: Record<string, string> = {
+  "707057500051982349": "Gamle BS",
+  "707057500051982356": "Gamle brønner",
+  "707057500058091327": "Nordfløy",
+};
+
+function getMeterDisplayName(meterId: string): string {
+  return meterDisplayNames[meterId] ?? meterId;
+}
+
 // The official types are not correct.
 declare module "trendline" {
   export function createTrend<X extends string, Y extends string>(
@@ -87,6 +97,19 @@ export function generateMonthlyReport(
     )
   );
 
+  // Per-meter monthly sums: displayName -> yearMonth -> kWh
+  const stroemByMeterByYearMonth: Record<string, Record<string, number>> = {};
+  for (const [meterId, values] of Object.entries(data.powerUsage ?? {}).filter(
+    ([key]) => key !== "Fjernvarme"
+  )) {
+    const displayName = getMeterDisplayName(meterId);
+    const byMonth = R.mapObjIndexed(sumHourUsages, byYearMonthGroup(values));
+    for (const [yearMonth, usage] of Object.entries(byMonth)) {
+      stroemByMeterByYearMonth[displayName] ??= {};
+      stroemByMeterByYearMonth[displayName][yearMonth] = usage!;
+    }
+  }
+
   const fjernvarme: Record<string, number | undefined> = R.mapObjIndexed(
     sumHourUsages,
     byYearMonthGroup(
@@ -100,6 +123,7 @@ export function generateMonthlyReport(
   return months.map((month) => {
     type YearMonthData = {
       stroem: number | undefined;
+      stroemByMeter: Record<string, number | undefined>;
       fjernvarme: number | undefined;
       forbrukSum: number | null;
       temperature: number | undefined;
@@ -181,6 +205,12 @@ export function generateMonthlyReport(
 
       obj.years[year] = {
         stroem: stroem[yearMonth],
+        stroemByMeter: Object.fromEntries(
+          Object.entries(stroemByMeterByYearMonth).map(([name, byMonth]) => [
+            name,
+            byMonth[yearMonth],
+          ])
+        ),
         fjernvarme: fjernvarme[yearMonth],
         forbrukSum: nullForZero(
           (stroem[yearMonth] ?? 0) + (fjernvarme[yearMonth] ?? 0)
@@ -227,6 +257,19 @@ export function generateDailyReport(
         .flat()
     )
   );
+
+  // Per-meter daily sums: displayName -> date -> kWh
+  const stroemByMeterByDate: Record<string, Record<string, number>> = {};
+  for (const [meterId, values] of Object.entries(data.powerUsage ?? {}).filter(
+    ([key]) => key !== "Fjernvarme"
+  )) {
+    const displayName = getMeterDisplayName(meterId);
+    const byDay = R.mapObjIndexed(sumHourUsages, byDateGroup(values));
+    for (const [date, usage] of Object.entries(byDay)) {
+      stroemByMeterByDate[date] ??= {};
+      stroemByMeterByDate[date][displayName] = usage!;
+    }
+  }
 
   const fjernvarme: Record<string, number | undefined> = R.mapObjIndexed(
     sumHourUsages,
@@ -308,6 +351,7 @@ export function generateDailyReport(
       date,
       name,
       stroem: stroem[date],
+      stroemByMeter: stroemByMeterByDate[date] ?? {},
       fjernvarme: fjernvarme[date],
       temperature: temperatures[date],
       price: roundTwoDec(priceStroem + priceFjernvarme),
@@ -376,6 +420,12 @@ export function generateHourlyReport(
             hour,
             name: `${dateStr} kl ${String(hour).padStart(2, "0")}`,
             stroem: Object.values(stroem).reduce((a, b) => a + b, 0),
+            stroemByMeter: Object.fromEntries(
+              Object.entries(stroem).map(([k, v]) => [
+                getMeterDisplayName(k),
+                v,
+              ])
+            ),
             fjernvarme: indexedData.fjernvarmeByHour[index],
             temperature: indexedData.temperatureByHour[index],
             price:
@@ -616,6 +666,7 @@ function generateCostReport(
 ) {
   const stroemCum = subsidyCum?.stroem ?? {};
 
+  const stroemItemsByMeter: Record<string, UsagePrice[]> = {};
   const stroemItems = dates
     .flatMap((dateObj) => {
       const date = dateObj.toString();
@@ -638,7 +689,7 @@ function generateCostReport(
             stroemCum[meterName]![yearMonth] =
               (stroemCum[meterName]![yearMonth] ?? 0) + usageKwh;
 
-            return calculateStroemHourlyPrice({
+            const price = calculateStroemHourlyPrice({
               data,
               indexedData,
               date,
@@ -647,6 +698,14 @@ function generateCostReport(
               meterName,
               subsidizedKwh,
             });
+
+            if (price != null && !isNaN(price.usageKwh)) {
+              const displayName = getMeterDisplayName(meterName);
+              stroemItemsByMeter[displayName] ??= [];
+              stroemItemsByMeter[displayName].push(price);
+            }
+
+            return price;
           });
         })
         .flat();
@@ -689,8 +748,14 @@ function generateCostReport(
   const stroem = flattenPrices(stroemItems);
   const fjernvarme = flattenPrices(fjernvarmeItems);
 
+  const stroemByMeter = R.mapObjIndexed(
+    (items) => flattenPrices(items!),
+    stroemItemsByMeter
+  );
+
   return {
     stroem,
+    stroemByMeter,
     stroemSum: nullForZero(sumPrice(stroem)),
     stroemDatapointsCount: stroemItems.length,
     fjernvarme,
@@ -908,7 +973,13 @@ export async function generateReportData(data: Data) {
       .subtract({ days: 1 })
   );
 
+  const stroemMeterNames = Object.keys(data.powerUsage ?? {})
+    .filter((key) => key !== "Fjernvarme")
+    .map(getMeterDisplayName)
+    .sort();
+
   const result = {
+    stroemMeterNames,
     monthly: {
       rows: withSpan("monthly-report", () =>
         generateMonthlyReport(

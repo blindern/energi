@@ -84,6 +84,25 @@ const colors = [
 ];
 type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
+const stroemMeterColors: Record<string, string> = {
+  "Gamle BS": "#6aa84f",
+  "Gamle brønner": "#b5651d",
+  "Nordfløy": "#3366cc",
+};
+
+function getStroemMeterColor(name: string): string {
+  return stroemMeterColors[name] ?? "#6aa84f";
+}
+
+function metersWithData(
+  meterNames: string[],
+  rows: { stroemByMeter: Record<string, number> }[],
+): string[] {
+  return meterNames.filter((name) =>
+    rows.some((row) => row.stroemByMeter[name] != null && row.stroemByMeter[name] > 0),
+  );
+}
+
 function deriveTempTickCount(data: number[]): number[] {
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -118,6 +137,10 @@ function expandLast<
       ...row,
       fjernvarme: row.fjernvarme == null ? prev?.fjernvarme : row.fjernvarme,
       stroem: row.stroem == null ? prev?.stroem : row.stroem,
+      stroemByMeter:
+        Object.keys(row.stroemByMeter).length === 0
+          ? (prev?.stroemByMeter ?? row.stroemByMeter)
+          : row.stroemByMeter,
       temperature:
         row.temperature == null ? prev?.temperature : row.temperature,
       price: row.price == null && prev != null ? prev.price : row.price,
@@ -131,6 +154,7 @@ function expandLast<
 }
 
 function Hourly({ reportData }: { reportData: ReportData }) {
+  const activeMeters = metersWithData(reportData.stroemMeterNames, reportData.hourly.rows);
   return (
     <ResponsiveContainer width="100%" height={350}>
       <ComposedChart data={expandLast(addEndItem(reportData.hourly.rows))}>
@@ -147,18 +171,21 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           legendType="plainline"
           strokeWidth={1.5}
         />
-        <Area
-          type="stepAfter"
-          dataKey="stroem"
-          name="Strøm"
-          stroke="#6aa84f"
-          fill="#6aa84f"
-          fillOpacity={0.3}
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.5}
-        />
+        {activeMeters.map((name) => (
+          <Area
+            key={name}
+            type="stepAfter"
+            dataKey={`stroemByMeter.${name}`}
+            name={`Strøm ${name}`}
+            stroke={getStroemMeterColor(name)}
+            fill={getStroemMeterColor(name)}
+            fillOpacity={0.3}
+            isAnimationActive={false}
+            dot={false}
+            legendType="plainline"
+            strokeWidth={1.5}
+          />
+        ))}
         <Line
           type="stepAfter"
           dataKey="temperature"
@@ -236,11 +263,14 @@ function Hourly({ reportData }: { reportData: ReportData }) {
 
 function Daily({
   graphData,
+  stroemMeterNames,
   summary,
 }: {
   graphData: ReportData["daily"]["rows"];
+  stroemMeterNames: string[];
   summary?: boolean;
 }) {
+  const activeMeters = metersWithData(stroemMeterNames, graphData);
   return (
     <ResponsiveContainer width="100%" height={summary ? 300 : 450}>
       <ComposedChart
@@ -259,18 +289,21 @@ function Daily({
           legendType="plainline"
           strokeWidth={1.2}
         />
-        <Area
-          type={summary ? "basis" : "stepAfter"}
-          dataKey="stroem"
-          name="Strøm"
-          stroke="#6aa84f"
-          fill="#6aa84f"
-          fillOpacity={0.3}
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
+        {activeMeters.map((name) => (
+          <Area
+            key={name}
+            type={summary ? "basis" : "stepAfter"}
+            dataKey={`stroemByMeter.${name}`}
+            name={`Strøm ${name}`}
+            stroke={getStroemMeterColor(name)}
+            fill={getStroemMeterColor(name)}
+            fillOpacity={0.3}
+            isAnimationActive={false}
+            dot={false}
+            legendType="plainline"
+            strokeWidth={1.2}
+          />
+        ))}
         <Line
           type={summary ? "basis" : "stepAfter"}
           dataKey="temperature"
@@ -428,7 +461,53 @@ function MonthlyData({
   );
 }
 
-function Monthly({ graphData }: { graphData: ReportData["monthly"]["rows"] }) {
+function MonthlyMeterData({
+  graphData,
+  meterName,
+}: {
+  graphData: ReportData["monthly"]["rows"];
+  meterName: string;
+}) {
+  const years = [
+    ...new Set(graphData.flatMap((it) => Object.keys(it.years))),
+  ].sort();
+
+  return (
+    <div className="monthly-item">
+      <h3>Forbruk strøm {meterName}</h3>
+      <ResponsiveContainer width={500} height={450}>
+        <ComposedChart data={graphData}>
+          <CartesianGrid stroke="#dddddd" />
+          {years.map((year, idx) => (
+            <Line
+              key={year}
+              type="monotone"
+              dataKey={`years.${year}.stroemByMeter.${meterName}`}
+              name={year}
+              stroke={colors[idx % colors.length]}
+              isAnimationActive={false}
+              dot={false}
+              legendType="plainline"
+              strokeWidth={1.2}
+            />
+          ))}
+          <XAxis dataKey={(it) => monthNames[Number(it.month)]} />
+          <YAxis unit=" kWh" tickCount={15} width={100} />
+          <Tooltip />
+          <Legend verticalAlign="top" height={20} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function Monthly({
+  graphData,
+  stroemMeterNames,
+}: {
+  graphData: ReportData["monthly"]["rows"];
+  stroemMeterNames: string[];
+}) {
   return (
     <>
       <MonthlyData graphData={graphData} label="Kostnad" field="price" />
@@ -458,28 +537,57 @@ function Monthly({ graphData }: { graphData: ReportData["monthly"]["rows"] }) {
         field="fjernvarme"
       />
       <MonthlyData graphData={graphData} label="Forbruk strøm" field="stroem" />
+      {stroemMeterNames
+        .filter((name) =>
+          graphData.some((row) =>
+            Object.values(row.years).some(
+              (y) => y.stroemByMeter[name] != null && y.stroemByMeter[name]! > 0,
+            ),
+          ),
+        )
+        .map((name) => (
+          <MonthlyMeterData key={name} graphData={graphData} meterName={name} />
+        ))}
     </>
   );
 }
 
-function Yearly({ tableData }: { tableData: ReportData["table"]["yearly"] }) {
+function Yearly({
+  tableData,
+  stroemMeterNames,
+}: {
+  tableData: ReportData["table"]["yearly"];
+  stroemMeterNames: string[];
+}) {
+  const filteredData = tableData.filter((it) => it.name >= "2015");
+  const activeMeters = stroemMeterNames.filter((name) =>
+    filteredData.some(
+      (it) => it.stroemByMeter[name] != null && it.stroemByMeter[name].usageKwh > 0,
+    ),
+  );
+
   return (
     <ResponsiveContainer width="100%" height={450}>
       <ComposedChart
-        data={tableData
+        data={filteredData
           // Only fjernvarme before 2015, so let's exclude that.
           // Temperature from 2015 which is interesting to compare against.
-          .filter((it) => it.name >= "2015")
           .map((it) => ({
             ...it,
             // Don't have strøm usage before 2018, so avoid showing 0 for that.
-            usageStroem:
-              it.stroem.usageKwh === 0 ? null : roundTwoDec(it.stroem.usageKwh),
             usageFjernvarme: roundTwoDec(it.fjernvarme.usageKwh),
             usageSum:
               it.stroem.usageKwh === 0
                 ? null
                 : roundTwoDec(it.stroem.usageKwh + it.fjernvarme.usageKwh),
+            ...Object.fromEntries(
+              activeMeters.map((name) => [
+                `usageMeter.${name}`,
+                it.stroemByMeter[name]?.usageKwh
+                  ? roundTwoDec(it.stroemByMeter[name].usageKwh)
+                  : null,
+              ]),
+            ),
             sum: sumOverride[it.name] ?? (it.sum === 0 ? null : it.sum),
             temperature:
               it.temperature != null ? roundTwoDec(it.temperature) : null,
@@ -511,18 +619,21 @@ function Yearly({ tableData }: { tableData: ReportData["table"]["yearly"] }) {
           legendType="plainline"
           strokeWidth={1.2}
         />
-        <Area
-          type="linear"
-          dataKey="usageStroem"
-          name="Strøm"
-          stroke="#6aa84f"
-          fill="#6aa84f"
-          fillOpacity={0.3}
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
+        {activeMeters.map((name) => (
+          <Area
+            key={name}
+            type="linear"
+            dataKey={`usageMeter.${name}`}
+            name={`Strøm ${name}`}
+            stroke={getStroemMeterColor(name)}
+            fill={getStroemMeterColor(name)}
+            fillOpacity={0.3}
+            isAnimationActive={false}
+            dot={false}
+            legendType="plainline"
+            strokeWidth={1.2}
+          />
+        ))}
         <Line
           type="linear"
           dataKey="temperature"
@@ -977,24 +1088,33 @@ const sumOverride: Record<string, number> = {
 function TableData({
   item,
   title,
+  stroemMeterNames,
   isDaily,
   skipOverride,
 }: {
   item: ReportData["table"]["yearly"];
   title: string;
+  stroemMeterNames: string[];
   isDaily?: boolean;
   skipOverride?: boolean;
 }) {
+  const activeMeters = stroemMeterNames.filter((name) =>
+    item.some((row) => row.stroemByMeter[name] != null && row.stroemByMeter[name].usageKwh > 0),
+  );
   const header = (
     <tr>
       <th>{title}</th>
       <th>Temperatur</th>
       <th>Spotpris</th>
-      <th>Forbruk strøm</th>
+      {activeMeters.map((name) => (
+        <th key={`usage-${name}`}>Forbruk {name}</th>
+      ))}
       <th>Forbruk fjernvarme</th>
       <th>Forbruk alt</th>
       <th>Strømstøtte</th>
-      <th>Kostnad strøm</th>
+      {activeMeters.map((name) => (
+        <th key={`cost-${name}`}>Kostnad {name}</th>
+      ))}
       <th>Kostnad fjernvarme</th>
       <th>Kostnad alt</th>
       <th>øre/kWh</th>
@@ -1013,14 +1133,13 @@ function TableData({
             <td>
               {it.spotprice == null ? "" : roundTwoDec(it.spotprice * 100)}
             </td>
-            <td>
-              {Math.round(it.stroem.usageKwh)}
-              {isDaily && it.stroemDatapointsCount !== 48 && (
-                <div className="incomplete-data">
-                  {it.stroemDatapointsCount} datapunkter
-                </div>
-              )}
-            </td>
+            {activeMeters.map((name) => (
+              <td key={`usage-${name}`}>
+                {it.stroemByMeter[name]
+                  ? Math.round(it.stroemByMeter[name].usageKwh)
+                  : ""}
+              </td>
+            ))}
             <td>
               {Math.round(it.fjernvarme.usageKwh)}
               {isDaily && it.fjernvarmeDatapointsCount !== 24 && (
@@ -1038,13 +1157,19 @@ function TableData({
                   (it.fjernvarme.variableByKwh["Norgespris"] ?? 0)
               ) || 0}
             </td>
-            <td>
-              <PriceDetails
-                type="stroem"
-                item={it.stroem}
-                datapointsCount={it.stroemDatapointsCount}
-              />
-            </td>
+            {activeMeters.map((name) => (
+              <td key={`cost-${name}`}>
+                {it.stroemByMeter[name] ? (
+                  <PriceDetails
+                    type="stroem"
+                    item={it.stroemByMeter[name]}
+                    datapointsCount={0}
+                  />
+                ) : (
+                  ""
+                )}
+              </td>
+            ))}
             <td>
               <PriceDetails
                 type="fjernvarme"
@@ -1168,6 +1293,7 @@ function Presentation({
             graphData={reportData.daily.rows
               .filter((it) => it.date < nowDate)
               .slice(-45)}
+            stroemMeterNames={reportData.stroemMeterNames}
             summary
           />
         </div>
@@ -1280,6 +1406,7 @@ function App() {
                   graphData={reportData.daily.rows.filter((it) =>
                     it.date.startsWith(String(year))
                   )}
+                  stroemMeterNames={reportData.stroemMeterNames}
                 />
               </Fragment>
             ))}
@@ -1288,9 +1415,15 @@ function App() {
             Vær obs på at inneværende måned vil ha manglende tall og vil vise
             feil verdi.
           </p>
-          <Monthly graphData={reportData.monthly.rows} />
+          <Monthly
+            graphData={reportData.monthly.rows}
+            stroemMeterNames={reportData.stroemMeterNames}
+          />
           <h2>Årlig forbruk</h2>
-          <Yearly tableData={reportData.table.yearly} />
+          <Yearly
+            tableData={reportData.table.yearly}
+            stroemMeterNames={reportData.stroemMeterNames}
+          />
           <h2>
             Detaljerte årstall (hvert år frem til og med{" "}
             <FormatPlainMonthDay
@@ -1304,15 +1437,29 @@ function App() {
           <TableData
             title="År"
             item={reportData.table.yearlyToThisDate.data}
+            stroemMeterNames={reportData.stroemMeterNames}
             skipOverride
           />
           <h2>Detaljerte årstall (hele år)</h2>
           Tall før 2022 kan være mangelfulle.
-          <TableData title="År" item={reportData.table.yearly} />
+          <TableData
+            title="År"
+            item={reportData.table.yearly}
+            stroemMeterNames={reportData.stroemMeterNames}
+          />
           <h2>Detaljerte månedstall</h2>
-          <TableData title="Måned" item={reportData.table.monthly} />
+          <TableData
+            title="Måned"
+            item={reportData.table.monthly}
+            stroemMeterNames={reportData.stroemMeterNames}
+          />
           <h2>Detaljerte dagstall siste dager</h2>
-          <TableData title="Dato" item={reportData.table.lastDays} isDaily />
+          <TableData
+            title="Dato"
+            item={reportData.table.lastDays}
+            stroemMeterNames={reportData.stroemMeterNames}
+            isDaily
+          />
           <p className="github-link">
             Laget av Henrik Steen
             <br />
