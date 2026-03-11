@@ -1107,16 +1107,16 @@ function TableData({
       <th>Temperatur</th>
       <th>Spotpris</th>
       {activeMeters.map((name) => (
-        <th key={`usage-${name}`}>Forbruk {name}</th>
+        <th key={`usage-${name}`} className="col-usage">Forbruk {name}</th>
       ))}
-      <th>Forbruk fjernvarme</th>
-      <th>Forbruk alt</th>
+      <th className="col-usage">Forbruk fjernvarme</th>
+      <th className="col-usage col-total">Forbruk alt</th>
       <th>Strømstøtte</th>
       {activeMeters.map((name) => (
-        <th key={`cost-${name}`}>Kostnad {name}</th>
+        <th key={`cost-${name}`} className="col-cost">Kostnad {name}</th>
       ))}
-      <th>Kostnad fjernvarme</th>
-      <th>Kostnad alt</th>
+      <th className="col-cost">Kostnad fjernvarme</th>
+      <th className="col-cost col-total">Kostnad alt</th>
       <th>øre/kWh</th>
     </tr>
   );
@@ -1134,13 +1134,13 @@ function TableData({
               {it.spotprice == null ? "" : roundTwoDec(it.spotprice * 100)}
             </td>
             {activeMeters.map((name) => (
-              <td key={`usage-${name}`}>
+              <td key={`usage-${name}`} className="col-usage">
                 {it.stroemByMeter[name]
                   ? Math.round(it.stroemByMeter[name].usageKwh)
                   : ""}
               </td>
             ))}
-            <td>
+            <td className="col-usage">
               {Math.round(it.fjernvarme.usageKwh)}
               {isDaily && it.fjernvarmeDatapointsCount !== 24 && (
                 <div className="incomplete-data">
@@ -1148,7 +1148,7 @@ function TableData({
                 </div>
               )}
             </td>
-            <td>{Math.round(it.stroem.usageKwh + it.fjernvarme.usageKwh)}</td>
+            <td className="col-usage col-total">{Math.round(it.stroem.usageKwh + it.fjernvarme.usageKwh)}</td>
             <td>
               {Math.round(
                 (it.stroem.variableByKwh["Strømstøtte"] ?? 0) +
@@ -1158,7 +1158,7 @@ function TableData({
               ) || 0}
             </td>
             {activeMeters.map((name) => (
-              <td key={`cost-${name}`}>
+              <td key={`cost-${name}`} className="col-cost">
                 {it.stroemByMeter[name] ? (
                   <PriceDetails
                     type="stroem"
@@ -1170,14 +1170,14 @@ function TableData({
                 )}
               </td>
             ))}
-            <td>
+            <td className="col-cost">
               <PriceDetails
                 type="fjernvarme"
                 item={it.fjernvarme}
                 datapointsCount={it.fjernvarmeDatapointsCount}
               />
             </td>
-            <td>
+            <td className="col-cost col-total">
               {(skipOverride ? undefined : sumOverride[it.name]) ??
                 Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}
             </td>

@@ -131,6 +131,22 @@ p {
   text-align: left;
 }
 
+.usagetable .col-usage {
+  background-color: #edf2f9;
+}
+
+.usagetable .col-cost {
+  background-color: #f0f7ed;
+}
+
+.usagetable .col-total.col-usage {
+  background-color: #dde8f4;
+}
+
+.usagetable .col-total.col-cost {
+  background-color: #e0edda;
+}
+
 .pricedetails {
   position: relative;
   white-space: nowrap;
