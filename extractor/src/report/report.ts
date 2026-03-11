@@ -22,11 +22,14 @@ import {
 } from "./helpers.ts";
 import { type IndexedData, dateHourIndexer, indexData } from "./indexed-data.ts";
 import {
+  FJERNVARME_SUBSIDY_CAP_KWH,
+  STROEM_SUBSIDY_CAP_KWH,
   type UsagePrice,
   calculateFjernvarmeHourlyPrice,
   calculateHourlyPrice,
   calculateStroemHourlyPrice,
   flattenPrices,
+  getSubsidizedKwh,
   sumPrice,
 } from "./prices.ts";
 
@@ -116,12 +119,25 @@ export function generateMonthlyReport(
 
       const yearMonth = `${year}-${month}`;
 
+      const stroemCum: Record<string, number> = {};
+      let fjernvarmeCum = 0;
+
       for (const date of datesByYearMonths[yearMonth] ?? []) {
         for (const hour of hoursInADay) {
           const index = dateHourIndexer({ date, hour });
           for (const [meterName, usageKwh] of Object.entries(
             indexedData.stroemByMeterNameByHour[index] ?? {}
           )) {
+            const subsidizedKwh =
+              yearMonth >= "2025-12"
+                ? getSubsidizedKwh(
+                    usageKwh,
+                    STROEM_SUBSIDY_CAP_KWH,
+                    stroemCum[meterName] ?? 0
+                  )
+                : undefined;
+            stroemCum[meterName] = (stroemCum[meterName] ?? 0) + usageKwh;
+
             priceStroem += zeroForNaN(
               sumPrice(
                 calculateStroemHourlyPrice({
@@ -131,10 +147,23 @@ export function generateMonthlyReport(
                   hour,
                   usageKwh,
                   meterName,
+                  subsidizedKwh,
                 })
               )
             );
           }
+
+          const fjernvarmeKwh = indexedData.fjernvarmeByHour[index] ?? NaN;
+          const fjernvarmeSubsidizedKwh =
+            yearMonth >= "2025-12"
+              ? getSubsidizedKwh(
+                  fjernvarmeKwh,
+                  FJERNVARME_SUBSIDY_CAP_KWH,
+                  fjernvarmeCum
+                )
+              : undefined;
+          if (!isNaN(fjernvarmeKwh)) fjernvarmeCum += fjernvarmeKwh;
+
           priceFjernvarme += zeroForNaN(
             sumPrice(
               calculateFjernvarmeHourlyPrice({
@@ -142,7 +171,8 @@ export function generateMonthlyReport(
                 indexedData,
                 date,
                 hour,
-                usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+                usageKwh: fjernvarmeKwh,
+                subsidizedKwh: fjernvarmeSubsidizedKwh,
               })
             )
           );
@@ -208,9 +238,14 @@ export function generateDailyReport(
     )
   );
 
+  // Track cumulative kWh per meter per month for subsidy cap
+  const stroemCum: Record<string, Record<string, number>> = {};
+  const fjernvarmeCum: Record<string, number> = {};
+
   return dates.map((date) => {
     const date1 = Temporal.PlainDate.from(date);
     const name = `${date1.day}.${date1.month}.${date1.year}`;
+    const yearMonth = date.slice(0, 7);
 
     let priceStroem = 0;
     let priceFjernvarme = 0;
@@ -220,6 +255,18 @@ export function generateDailyReport(
       for (const [meterName, usageKwh] of Object.entries(
         indexedData.stroemByMeterNameByHour[index] ?? {}
       )) {
+        const subsidizedKwh =
+          yearMonth >= "2025-12"
+            ? getSubsidizedKwh(
+                usageKwh,
+                STROEM_SUBSIDY_CAP_KWH,
+                stroemCum[meterName]?.[yearMonth] ?? 0
+              )
+            : undefined;
+        stroemCum[meterName] ??= {};
+        stroemCum[meterName]![yearMonth] =
+          (stroemCum[meterName]![yearMonth] ?? 0) + usageKwh;
+
         priceStroem += sumPrice(
           calculateStroemHourlyPrice({
             data,
@@ -228,16 +275,31 @@ export function generateDailyReport(
             hour,
             usageKwh,
             meterName,
+            subsidizedKwh,
           })
         );
       }
+
+      const fjernvarmeKwh = indexedData.fjernvarmeByHour[index] ?? NaN;
+      const fjernvarmeSubsidizedKwh =
+        yearMonth >= "2025-12"
+          ? getSubsidizedKwh(
+              fjernvarmeKwh,
+              FJERNVARME_SUBSIDY_CAP_KWH,
+              fjernvarmeCum[yearMonth] ?? 0
+            )
+          : undefined;
+      if (!isNaN(fjernvarmeKwh))
+        fjernvarmeCum[yearMonth] = (fjernvarmeCum[yearMonth] ?? 0) + fjernvarmeKwh;
+
       priceFjernvarme += sumPrice(
         calculateFjernvarmeHourlyPrice({
           data,
           indexedData,
           date,
           hour,
-          usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+          usageKwh: fjernvarmeKwh,
+          subsidizedKwh: fjernvarmeSubsidizedKwh,
         })
       );
     }
@@ -262,10 +324,14 @@ export function generateHourlyReport(
 ) {
   const dates = datesInRange(firstDate, lastDate).map((it) => it.toString());
 
+  const stroemCum: Record<string, Record<string, number>> = {};
+  const fjernvarmeCum: Record<string, number> = {};
+
   return dates
     .map((date) => {
       const date1 = Temporal.PlainDate.from(date);
       const dateStr = dayNames[date1.dayOfWeek];
+      const yearMonth = date.slice(0, 7);
       return hoursInADay
         .filter(
           (hour) =>
@@ -278,6 +344,33 @@ export function generateHourlyReport(
           const index = dateHourIndexer({ date, hour });
           const stroem = indexedData.stroemByMeterNameByHour[index] ?? {};
           const fjernvarme = indexedData.fjernvarmeByHour[index];
+
+          let stroemSubsidizedKwh: Record<string, number> | undefined;
+          if (yearMonth >= "2025-12") {
+            stroemSubsidizedKwh = {};
+            for (const [meterName, usageKwh] of Object.entries(stroem)) {
+              stroemSubsidizedKwh[meterName] = getSubsidizedKwh(
+                usageKwh,
+                STROEM_SUBSIDY_CAP_KWH,
+                stroemCum[meterName]?.[yearMonth] ?? 0
+              );
+              stroemCum[meterName] ??= {};
+              stroemCum[meterName]![yearMonth] =
+                (stroemCum[meterName]![yearMonth] ?? 0) + usageKwh;
+            }
+          }
+
+          let fjernvarmeSubsidizedKwh: number | undefined;
+          if (yearMonth >= "2025-12" && fjernvarme != null) {
+            fjernvarmeSubsidizedKwh = getSubsidizedKwh(
+              fjernvarme,
+              FJERNVARME_SUBSIDY_CAP_KWH,
+              fjernvarmeCum[yearMonth] ?? 0
+            );
+            fjernvarmeCum[yearMonth] =
+              (fjernvarmeCum[yearMonth] ?? 0) + fjernvarme;
+          }
+
           return {
             date,
             hour,
@@ -296,6 +389,8 @@ export function generateHourlyReport(
                       hour,
                       stroem,
                       fjernvarme,
+                      stroemSubsidizedKwh,
+                      fjernvarmeSubsidizedKwh,
                     })
                   ),
           };
@@ -416,12 +511,16 @@ function generatePriceReport(
 ) {
   const dates = datesInRange(firstDate, lastDate).map((it) => it.toString());
 
+  const stroemCum: Record<string, Record<string, number>> = {};
+  const fjernvarmeCum: Record<string, number> = {};
+
   return dates
     .map((date) => {
       const date1 = Temporal.PlainDate.from(date);
       const dateStr = `${dayNames[date1.dayOfWeek]} ${date1.day}.${
         date1.month
       }`;
+      const yearMonth = date.slice(0, 7);
 
       return hoursInADay.map((hour) => {
         const index = dateHourIndexer({ date, hour });
@@ -441,6 +540,18 @@ function generatePriceReport(
         for (const [meterName, usageKwh] of Object.entries(
           indexedData.stroemByMeterNameByHour[index] ?? {}
         )) {
+          const subsidizedKwh =
+            yearMonth >= "2025-12"
+              ? getSubsidizedKwh(
+                  usageKwh,
+                  STROEM_SUBSIDY_CAP_KWH,
+                  stroemCum[meterName]?.[yearMonth] ?? 0
+                )
+              : undefined;
+          stroemCum[meterName] ??= {};
+          stroemCum[meterName]![yearMonth] =
+            (stroemCum[meterName]![yearMonth] ?? 0) + usageKwh;
+
           priceStroem += sumPrice(
             calculateStroemHourlyPrice({
               data,
@@ -449,9 +560,22 @@ function generatePriceReport(
               hour,
               usageKwh,
               meterName,
+              subsidizedKwh,
             })
           );
         }
+
+        const fjernvarmeSubsidizedKwh =
+          yearMonth >= "2025-12"
+            ? getSubsidizedKwh(
+                fjernvarmeUsage,
+                FJERNVARME_SUBSIDY_CAP_KWH,
+                fjernvarmeCum[yearMonth] ?? 0
+              )
+            : undefined;
+        if (!isNaN(fjernvarmeUsage))
+          fjernvarmeCum[yearMonth] =
+            (fjernvarmeCum[yearMonth] ?? 0) + fjernvarmeUsage;
 
         const priceFjernvarme = sumPrice(
           calculateFjernvarmeHourlyPrice({
@@ -460,6 +584,7 @@ function generatePriceReport(
             date,
             hour,
             usageKwh: fjernvarmeUsage,
+            subsidizedKwh: fjernvarmeSubsidizedKwh,
           })
         );
 
@@ -478,20 +603,41 @@ function generatePriceReport(
     .flat();
 }
 
+type SubsidyCumState = {
+  stroem: Record<string, Record<string, number>>;
+  fjernvarme: Record<string, number>;
+};
+
 function generateCostReport(
   data: Data,
   indexedData: IndexedData,
-  dates: Temporal.PlainDate[]
+  dates: Temporal.PlainDate[],
+  subsidyCum?: SubsidyCumState
 ) {
+  const stroemCum = subsidyCum?.stroem ?? {};
+
   const stroemItems = dates
     .flatMap((dateObj) => {
       const date = dateObj.toString();
+      const yearMonth = date.slice(0, 7);
       return hoursInADay
         .map((hour) => {
           const index = dateHourIndexer({ date, hour });
           return Object.entries(
             indexedData.stroemByMeterNameByHour[index] ?? {}
           ).map(([meterName, usageKwh]) => {
+            const subsidizedKwh =
+              yearMonth >= "2025-12"
+                ? getSubsidizedKwh(
+                    usageKwh,
+                    STROEM_SUBSIDY_CAP_KWH,
+                    stroemCum[meterName]?.[yearMonth] ?? 0
+                  )
+                : undefined;
+            stroemCum[meterName] ??= {};
+            stroemCum[meterName]![yearMonth] =
+              (stroemCum[meterName]![yearMonth] ?? 0) + usageKwh;
+
             return calculateStroemHourlyPrice({
               data,
               indexedData,
@@ -499,6 +645,7 @@ function generateCostReport(
               hour,
               usageKwh,
               meterName,
+              subsidizedKwh,
             });
           });
         })
@@ -506,17 +653,34 @@ function generateCostReport(
     })
     .filter((it): it is UsagePrice => it != null && !isNaN(it.usageKwh));
 
+  const fjernvarmeCum = subsidyCum?.fjernvarme ?? {};
+
   const fjernvarmeItems = dates
     .flatMap((dateObj) => {
       const date = dateObj.toString();
+      const yearMonth = date.slice(0, 7);
       return hoursInADay.map((hour) => {
         const index = dateHourIndexer({ date, hour });
+        const usageKwh = indexedData.fjernvarmeByHour[index] ?? NaN;
+        const subsidizedKwh =
+          yearMonth >= "2025-12"
+            ? getSubsidizedKwh(
+                usageKwh,
+                FJERNVARME_SUBSIDY_CAP_KWH,
+                fjernvarmeCum[yearMonth] ?? 0
+              )
+            : undefined;
+        if (!isNaN(usageKwh))
+          fjernvarmeCum[yearMonth] =
+            (fjernvarmeCum[yearMonth] ?? 0) + usageKwh;
+
         return calculateFjernvarmeHourlyPrice({
           data,
           indexedData,
           date,
           hour,
-          usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+          usageKwh,
+          subsidizedKwh,
         });
       });
     })
@@ -540,13 +704,14 @@ function generateTableData(
   data: Data,
   indexedData: IndexedData,
   name: string,
-  bucketDates: Temporal.PlainDate[]
+  bucketDates: Temporal.PlainDate[],
+  subsidyCum?: SubsidyCumState
 ) {
   return {
     name,
     spotprice: averageSpotprice(indexedData, bucketDates),
     temperature: averageTemperature(indexedData, bucketDates),
-    ...generateCostReport(data, indexedData, bucketDates),
+    ...generateCostReport(data, indexedData, bucketDates, subsidyCum),
   };
 }
 
@@ -610,11 +775,40 @@ function generateMonthlyTableReport(data: Data, indexedData: IndexedData) {
 
 function generateLastDaysTableReport(data: Data, indexedData: IndexedData) {
   const firstDate = Temporal.PlainDate.from("2021-01-01");
+  const allDates = datesInRange(firstDate, indexedData.lastDate);
+  const last60 = allDates.slice(-60);
 
-  const dates = datesInRange(firstDate, indexedData.lastDate).slice(-60);
+  // Pre-compute cumulative kWh for days before the 60-day window
+  // (from start of the first month) so the subsidy cap is accurate
+  const subsidyCum: SubsidyCumState = { stroem: {}, fjernvarme: {} };
+  const firstDay = last60[0];
+  if (firstDay) {
+    const monthStart = firstDay.with({ day: 1 });
+    for (const date of allDates) {
+      if (Temporal.PlainDate.compare(date, monthStart) < 0) continue;
+      if (Temporal.PlainDate.compare(date, firstDay) >= 0) break;
+      const dateStr = date.toString();
+      const yearMonth = dateStr.slice(0, 7);
+      for (const hour of hoursInADay) {
+        const index = dateHourIndexer({ date: dateStr, hour });
+        for (const [meterName, usageKwh] of Object.entries(
+          indexedData.stroemByMeterNameByHour[index] ?? {}
+        )) {
+          subsidyCum.stroem[meterName] ??= {};
+          subsidyCum.stroem[meterName]![yearMonth] =
+            (subsidyCum.stroem[meterName]![yearMonth] ?? 0) + usageKwh;
+        }
+        const fj = indexedData.fjernvarmeByHour[index];
+        if (fj != null && !isNaN(fj)) {
+          subsidyCum.fjernvarme[yearMonth] =
+            (subsidyCum.fjernvarme[yearMonth] ?? 0) + fj;
+        }
+      }
+    }
+  }
 
-  return dates.map((date) =>
-    generateTableData(data, indexedData, date.toString(), [date])
+  return last60.map((date) =>
+    generateTableData(data, indexedData, date.toString(), [date], subsidyCum)
   );
 }
 
