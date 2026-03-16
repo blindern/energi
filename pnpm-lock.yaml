@@ -34,7 +34,7 @@ importers:
         version: 0.211.0(@opentelemetry/api@1.9.0)
       dotenv:
         specifier: ^17.0.0
-        version: 17.2.4
+        version: 17.3.1
       pino:
         specifier: ^10.3.0
         version: 10.3.0
@@ -1352,8 +1352,8 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  dotenv@17.2.4:
-    resolution: {integrity: sha512-mudtfb4zRB4bVvdj0xRo+e6duH1csJRM8IukBqfTRvHotn9+LBXB8ynAidP9zHqoRC/fsllXgk4kCKlR21fIhw==}
+  dotenv@17.3.1:
+    resolution: {integrity: sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==}
     engines: {node: '>=12'}
 
   electron-to-chromium@1.5.313:
@@ -2158,7 +2158,7 @@ snapshots:
       '@opentelemetry/exporter-trace-otlp-proto': 0.211.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-metrics': 2.5.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-node': 0.211.0(@opentelemetry/api@1.9.0)
-      dotenv: 17.2.4
+      dotenv: 17.3.1
       pino: 10.3.1
       ramda: 0.32.0
       trendline: 1.1.0
@@ -3420,7 +3420,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  dotenv@17.2.4: {}
+  dotenv@17.3.1: {}
 
   electron-to-chromium@1.5.313: {}
 
