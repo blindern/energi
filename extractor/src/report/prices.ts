@@ -579,7 +579,7 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2025-10": 107.6 * 74 * 1.25, // From invoice.
   "2025-11": 115 * 74 * 1.25, // Guess.
   "2025-12": 120 * 74 * 1.25, // Guess.
-  "2026-01": 118.8 * 74 * 1.25, // Guess.
+  "2026-01": 112.8 * 74 * 1.25, // From invoice.
   "2026-02": 121 * 74 * 1.25, // Guess.
   "2026-03": 107.2 * 74 * 1.25, // Guess.
   "2026-04": 104 * 31 * 1.25, // Guess.
@@ -887,6 +887,79 @@ function calculateStroemHourlyPriceFrom2025Jan(props: {
   };
 }
 
+function calculateStroemHourlyPriceFrom2026Jan(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+  meterName: string;
+  subsidizedKwh?: number | undefined;
+}): UsagePrice {
+  const stroemPaaslagPerKwh = 0.0145 * 1.25;
+
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+  const dateHour = dateHourIndexer(props);
+
+  const spotpriceHourPerKwh =
+    props.indexedData.spotpriceByHour[dateHour] ?? NaN;
+
+  let kraftPerKwh =
+    props.indexedData.stroemFakturaPricePerKwhByMonthByMeterName[
+      props.meterName
+    ]?.[yearMonth];
+  if (kraftPerKwh != null) {
+    kraftPerKwh -= stroemPaaslagPerKwh;
+  } else {
+    kraftPerKwh = spotpriceHourPerKwh * stroemKraftMonthlyDefaultFactor;
+  }
+
+  const isNorgespris = norgesprisFrom[props.meterName]
+    ? props.date >= norgesprisFrom[props.meterName]!
+    : false;
+
+  const variableByKwh = multiplyWithUsage(props.usageKwh, {
+    "Strøm: Kraft": kraftPerKwh,
+    "Strøm: Påslag": stroemPaaslagPerKwh,
+    "Diverse: Nettleiehåndtering": 0.0025 * 1.25,
+    // TODO: Nordfløy har forskjellige pristrinn på effekt - ikke tatt høyde for i denne beregningen p.t.
+    "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
+    "Nettleie: Energifondet": 0.01 * 1.25,
+    "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+    Strømstøtte: isNorgespris
+      ? 0
+      : -getPriceSupportOfHourPerKwh(yearMonth, spotpriceHourPerKwh),
+    Norgespris: isNorgespris ? 0.4 * 1.25 - spotpriceHourPerKwh : 0,
+  });
+
+  if (
+    props.subsidizedKwh != null &&
+    props.subsidizedKwh < props.usageKwh &&
+    props.usageKwh > 0
+  ) {
+    const factor = props.subsidizedKwh / props.usageKwh;
+    if (variableByKwh.Strømstøtte) variableByKwh.Strømstøtte *= factor;
+    if (variableByKwh.Norgespris) variableByKwh.Norgespris *= factor;
+  }
+
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh,
+    static: {
+      "Nettleie: Enova påslag": (800 * 1.25) / 365 / 24,
+      "Nettleie: Fastledd":
+        (nettFastleddMaanedByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+      "Nettleie: Effekt":
+        (effektleddPerKwhByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+    },
+  };
+}
+
 export function calculateStroemHourlyPrice(props: {
   data: Data;
   indexedData: IndexedData;
@@ -909,7 +982,9 @@ export function calculateStroemHourlyPrice(props: {
     };
   }
 
-  if (props.date >= "2025-01") {
+  if (props.date >= "2026-01") {
+    return calculateStroemHourlyPriceFrom2026Jan(props);
+  } else if (props.date >= "2025-01") {
     return calculateStroemHourlyPriceFrom2025Jan(props);
   } else if (props.date >= "2023-04") {
     return calculateStroemHourlyPriceFrom2023Apr(props);
