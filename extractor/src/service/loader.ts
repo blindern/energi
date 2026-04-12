@@ -59,13 +59,25 @@ export async function loadNordpoolIfNeeded(
 ): Promise<void> {
   const dateFormatted = date.toString();
 
-  if (
-    (data.nordpool ?? []).find((it) => it.date == dateFormatted) !== undefined
-  ) {
+  // Refetch Preliminary rows so they converge to Final. Legacy rows with no
+  // state were written under the old Final-only code, so treat as Final.
+  const existing = (data.nordpool ?? []).filter(
+    (it) => it.date === dateFormatted,
+  );
+  const hasFinal = existing.some(
+    (it) => it.state === undefined || it.state === "Final",
+  );
+  if (hasFinal) {
     return;
   }
 
-  logger.info({ date: dateFormatted }, "Loading nordpool data");
+  const refetch = existing.length > 0;
+  logger.info(
+    { date: dateFormatted, refetch },
+    refetch
+      ? "Refetching nordpool data (was Preliminary)"
+      : "Loading nordpool data",
+  );
 
   const nordpoolData: DataNordpoolPriceHour[] = (
     await getNordpoolData(date)
@@ -73,7 +85,19 @@ export async function loadNordpoolIfNeeded(
     date: it.date.toString(),
     hour: it.hour,
     price: it.price,
+    state: it.state,
   }));
+
+  if (nordpoolData.length === 0) {
+    logger.info({ date: dateFormatted }, "Nordpool data not available");
+    return;
+  }
+
+  const newState = nordpoolData[0]!.state;
+  logger.info(
+    { date: dateFormatted, state: newState, hours: nordpoolData.length },
+    "Nordpool data loaded",
+  );
 
   data.nordpool = (data.nordpool ?? [])
     .filter((it) => it.date !== dateFormatted)

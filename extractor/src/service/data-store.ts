@@ -4,6 +4,8 @@ export interface DataNordpoolPriceHour {
   date: string; // yyyy-mm-dd
   hour: number;
   price: number;
+  // Legacy rows (pre-Preliminary support) have no state; treated as Final.
+  state?: "Preliminary" | "Final";
 }
 
 export interface DataTemperatureHour {

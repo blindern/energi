@@ -4,6 +4,7 @@ export interface HourPrice {
   date: Temporal.PlainDate;
   hour: number;
   price: number;
+  state: "Preliminary" | "Final";
 }
 
 export async function getNordpoolData(
@@ -30,10 +31,12 @@ export async function getNordpoolData(
   }
 
   const responseJson = (await response.json()) as {
-    areaStates: {
-      state: string;
-      areas: string[];
-    }[];
+    areaStates:
+      | {
+          state: string;
+          areas: string[];
+        }[]
+      | null;
     multiIndexEntries: {
       deliveryStart: string;
       deliveryEnd: string;
@@ -53,12 +56,15 @@ export async function getNordpoolData(
     ],
   */
 
+  // areaStates is null for dates outside the API's retention or not yet published.
+  const areaState = responseJson.areaStates?.[0];
   if (
-    responseJson.areaStates[0]?.state !== "Final" ||
-    responseJson.areaStates[0]?.areas[0] !== "NO1"
+    areaState?.areas[0] !== "NO1" ||
+    (areaState.state !== "Final" && areaState.state !== "Preliminary")
   ) {
-    throw new Error(`Not final NO1 data: ${JSON.stringify(responseJson.areaStates).slice(0, 200)}`);
+    return [];
   }
+  const state = areaState.state;
 
   const result: HourPrice[] = [];
 
@@ -104,6 +110,7 @@ export async function getNordpoolData(
       date: localDateTime.toPlainDate(),
       hour: localDateTime.hour,
       price,
+      state,
     });
   }
 
