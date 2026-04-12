@@ -4,7 +4,7 @@ set -eu
 # Dette scriptet avhenger av energi-data mappen lokalt.
 
 scp -C root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json extractor/data.json
-pnpm run --filter ./extractor generate-report
+MONTHLY_DETAILS_FILE=../report/monthly-details.json pnpm run --filter ./extractor generate-report
 
 set -x
 cp extractor/data.json ../energi-data/data.json

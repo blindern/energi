@@ -39,5 +39,4 @@ export const DATA_FILE = process.env["DATA_FILE"] ?? "data.json";
 export const REPORT_FILE =
   process.env["REPORT_FILE"] ?? "../report/report.json";
 
-export const MONTHLY_DETAILS_FILE =
-  process.env["MONTHLY_DETAILS_FILE"] ?? "../report/monthly-details.json";
+export const MONTHLY_DETAILS_FILE = process.env["MONTHLY_DETAILS_FILE"];
