@@ -1,5 +1,4 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as crypto from "crypto";
 import type { HourUsage } from "./common.ts";
 
 interface Consumption {
@@ -8,83 +7,225 @@ interface Consumption {
   status: string; // e.g. OK
 }
 
+interface Money {
+  total: number;
+  totalExTaxes: number;
+  totalExVat: number;
+}
+
+interface SpotPrice {
+  total: number;
+  totalExTaxes: number;
+  taxes: number;
+}
+
+interface Cost {
+  energy: Money;
+  fixed: Money;
+  sum: Money;
+}
+
+interface DistributionPricePoint {
+  pricePointName: string; // e.g. Dag
+  price: {
+    monetaryUnitOfMeasure: string; // e.g. øre/kWh
+    currency: string; // e.g. NOK
+    total: number;
+    totalExTaxes: number;
+    totalExVat: number;
+  };
+  percentage: number;
+  consumption: number;
+  consumptionUnitOfMeasure: string; // e.g. kWh
+}
+
+interface Distribution {
+  totalMeterValueAveragePriceDistribution: {
+    monetaryUnitOfMeasure: string; // e.g. øre/kWh
+    currency: string; // e.g. NOK
+    total: number;
+    totalExTaxes: number;
+    totalExVat: number;
+  };
+  day: DistributionPricePoint;
+  night: DistributionPricePoint;
+}
+
 interface MeterValuesResponse {
   years: {
     months: {
       days: {
         hours: {
-          id: string; // e.g. 2022010100
-          production: any; // null?
+          id: string; // e.g. 2026041000
+          production: null;
           consumption?: Consumption;
-          level: string; // e.g. Unknown
+          level: string; // e.g. Cheap
+          cost: Cost;
+          compensationTotal: number;
+          powerSupplierCost: Money;
+          spotPrice: SpotPrice;
+          monthNorwayPriceConsumption: number;
+          norwayPriceThresholdExceeded: boolean;
+          compensationConsumptionLimitExceeded: boolean;
         }[];
-        isWeekendOrHoliday: true;
-        id: string; // e.g. 20220101
-        production: any; // null?
+        isWeekendOrHoliday: boolean;
+        id: string; // e.g. 20260410
+        production: null;
         consumption: Consumption;
+        cost: Cost;
+        distribution: Distribution;
+        isPeriodCompleted: boolean;
+        compensationTotal: number;
+        powerSupplierCost: Money;
+        spotPrice: SpotPrice;
+        compensationType: string; // e.g. NorwayPrice
+        monthNorwayPriceConsumption: number;
+        norwayPriceThresholdExceeded: boolean;
+        compensationConsumptionLimitExceeded: boolean;
       }[];
-      maxHourId: string; // e.g. 2022012613
       maxHours: {
         hours: {
-          id: string; // e.g. 2022013113
-          production: any; // null?
+          id: string; // e.g. 2026041013
+          production: null;
           consumption: Consumption;
         }[];
         average: number;
         consumptionUnitOfMeasure: string; // e.g. kWh
       };
-      id: string; // e.g. 202201
-      production: any; // null?
+      id: string; // e.g. 202604
+      production: null;
       consumption: Consumption;
+      cost: Cost;
+      distribution: Distribution;
+      isPeriodCompleted: boolean;
+      fixedPriceLevels: {
+        id: string;
+        valueMin: number;
+        valueMax: number;
+        nextIdDown: string | null;
+        nextIdUp: string | null;
+        valueUnitOfMeasure: string; // e.g. kWh/h
+        monthlyTotal: number;
+        monthlyTotalExVat: number;
+        monthlyExTaxes: number;
+        monthlyTaxes: number;
+        monthlyUnitOfMeasure: string; // e.g. kr/måned
+        levelInfo: string; // e.g. Power consumption: 0-2 kWh/h
+        currency: string; // e.g. NOK
+        monetaryUnitOfMeasure: string; // e.g. kr/time
+        level: number;
+        isActive: boolean;
+      }[];
+      compensationTotal: number;
+      compensation: {
+        vat: number;
+        compensationDegree: number;
+        total: number;
+        averageSpotPrice: SpotPrice;
+        priceThreshold: number;
+        maxConsumption: number;
+      };
+      powerSupplierCost: Money;
+      spotPrice: SpotPrice;
+      compensationType: string; // e.g. NorwayPrice
+      norwayPriceThresholdExceeded: boolean;
+      compensationConsumptionLimitExceeded: boolean;
     }[];
-    daylightSavingTimeStart: string; // e.g. 2022103002
-    daylightSavingTimeEnd: string; // e.g. 2022032702
-    maxHourId: string; // e.g. 2022020310
-    id: string; // e.g. 2022
-    production: any; // null?
+    daylightSavingTimeStart: string; // e.g. 2026102502
+    daylightSavingTimeEnd: string; // e.g. 2026032902
+    id: string; // e.g. 2026
+    production: null;
     consumption: Consumption;
+    cost: Cost;
+    distribution: Distribution;
+    isPeriodCompleted: boolean;
+    powerSupplierCost: Money;
+    compensationTotal: number;
+    spotPrice: SpotPrice;
+    compensationType: string; // e.g. NorwayPrice
   }[];
-  customerId: string;
+  customerId: string | null;
   contractId: string;
+  unit: {
+    consumption: { value: string }; // e.g. kWh
+    production: { value: string }; // e.g. kWh
+    cost: { total: string; totalExVat: string; totalExTaxes: string }; // e.g. kr
+    distribution: { total: string; totalExVat: string; totalExTaxes: string };
+    fixedPriceLevels: {
+      valueMin: string; // e.g. kWh/h
+      valueMax: string;
+      monthlyTotal: string; // e.g. kr/måned
+      monthlyTotalExVat: string;
+      monthlyExTaxes: string;
+      monthlyTaxes: string;
+    };
+    compensation: {
+      total: string; // e.g. kr
+      priceThreshold: string; // e.g. øre/kWh
+      maxConsumption: string; // e.g. kWh
+      averageSpotPrice: { total: string; totalExVat: string; totalExTaxes: string };
+    };
+  };
 }
 
-function cookiesHeader(cookies: Record<string, string>) {
-  return Object.entries(cookies)
+export type ElviaSession = Map<string, Record<string, string>>;
+
+function cookieHeader(session: ElviaSession, host: string): string {
+  return Object.entries(session.get(host) ?? {})
     .map(([key, value]) => `${key}=${value}`)
     .join("; ");
 }
 
-function parseSetCookie(values: string[]): Record<string, string> {
-  return Object.fromEntries(
-    values.flatMap((setCookie) => {
-      const parts = setCookie.split(";").map((it) => it.trim());
-      const namedParts = Object.fromEntries(
-        parts.map((part) => part.split("=", 2))
-      );
-
-      if (
-        namedParts.expires == null ||
-        new Date(namedParts.expires).getTime() > new Date().getTime()
-      ) {
-        return [parts[0]!.split("=", 2)];
-      } else {
-        return [];
-      }
-    })
-  );
+function ingestSetCookie(
+  session: ElviaSession,
+  host: string,
+  response: Response
+): void {
+  const current = session.get(host) ?? {};
+  for (const raw of response.headers.getSetCookie()) {
+    const parts = raw.split(";").map((it) => it.trim());
+    const eq = parts[0]!.indexOf("=");
+    if (eq === -1) continue;
+    const name = parts[0]!.slice(0, eq);
+    const value = parts[0]!.slice(eq + 1);
+    const expires = parts.find((p) => /^expires=/i.test(p));
+    if (expires && new Date(expires.slice(8)).getTime() < Date.now()) {
+      delete current[name];
+      continue;
+    }
+    current[name] = value;
+  }
+  session.set(host, current);
 }
 
-function deriveCookies(response: Response, initial?: Record<string, string>) {
-  const additionalCookies = parseSetCookie(
-    response.headers.getSetCookie() ?? []
-  );
+async function hop(
+  session: ElviaSession,
+  url: string,
+  init: RequestInit = {}
+): Promise<Response> {
+  const { host } = new URL(url);
+  const headers = new Headers(init.headers);
+  const cookie = cookieHeader(session, host);
+  if (cookie) headers.set("cookie", cookie);
+  const response = await fetch(url, { ...init, headers, redirect: "manual" });
+  ingestSetCookie(session, host, response);
+  return response;
+}
 
-  const updatedCookies = {
-    ...(initial ?? {}),
-    ...additionalCookies,
-  };
-
-  return updatedCookies;
+async function followRedirects(
+  session: ElviaSession,
+  startUrl: string,
+  init: RequestInit = {},
+  maxHops = 12
+): Promise<{ finalUrl: string; response: Response }> {
+  let url = startUrl;
+  for (let i = 0; i < maxHops; i++) {
+    const response = await hop(session, url, i === 0 ? init : {});
+    const location = response.headers.get("location");
+    if (!location) return { finalUrl: url, response };
+    url = new URL(location, url).toString();
+  }
+  throw new Error(`Exceeded max redirects starting from ${startUrl}`);
 }
 
 function serializeQueryString(form: Record<string, string>): string {
@@ -96,245 +237,104 @@ function serializeQueryString(form: Record<string, string>): string {
     .join("&");
 }
 
-async function getInitialLoginState(): Promise<{
-  cookies: Record<string, string>;
-  csrfToken: string;
-}> {
-  const response = await fetch("https://elvid.elvia.io/Login", {
-    method: "GET",
-    redirect: "manual",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
-  }
-
-  const cookies = parseSetCookie(response.headers.getSetCookie() ?? []);
-  const textContent = await response.text();
-
-  const csrfTokenMatch = textContent.match(
-    /name="__RequestVerificationToken" type="hidden" value="([^"]+)"/
-  );
-  if (!csrfTokenMatch) {
-    throw new Error(`Failed to find csrf token in response from ${response.url}`);
-  }
-
-  return {
-    cookies,
-    csrfToken: csrfTokenMatch[1]!,
-  };
-}
-
-async function getValidLoginState({
-  initialCookies,
-  csrfToken,
+export async function loginToElvia({
   email,
   password,
 }: {
-  initialCookies: Record<string, string>;
-  csrfToken: string;
   email: string;
   password: string;
-}): Promise<{
-  cookies: Record<string, string>;
-}> {
-  const form = {
-    ReturnUrl: "",
+}): Promise<ElviaSession> {
+  const session: ElviaSession = new Map();
+
+  const initial = await followRedirects(
+    session,
+    "https://minside.elvia.no/bff/login"
+  );
+  const loginPageHtml = await initial.response.text();
+
+  const csrfMatch = loginPageHtml.match(
+    /name="__RequestVerificationToken"[^>]*value="([^"]+)"/
+  );
+  if (!csrfMatch) {
+    throw new Error(
+      `Failed to find CSRF token in login page at ${initial.finalUrl}`
+    );
+  }
+
+  const returnUrl =
+    new URL(initial.finalUrl).searchParams.get("ReturnUrl") ?? "";
+  const formBody = serializeQueryString({
     Email: email,
     Password: password,
     button: "login",
-    __RequestVerificationToken: csrfToken,
     RememberLogin: "false",
-  };
+    ReturnUrl: returnUrl,
+    __RequestVerificationToken: csrfMatch[1]!,
+  });
 
-  const response = await fetch("https://elvid.elvia.io/Login", {
+  const result = await followRedirects(session, initial.finalUrl, {
     method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      cookie: cookiesHeader(initialCookies),
-    },
-    body: serializeQueryString(form),
-    redirect: "manual",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: formBody,
   });
 
-  if (response.status !== 302) {
-    throw new Error(`Expected 302 redirect, got ${response.status} from ${response.url}`);
+  if (!result.response.ok) {
+    throw new Error(
+      `Elvia login failed: status=${result.response.status} at ${result.finalUrl}`
+    );
+  }
+  if (!session.get("minside.elvia.no")?.["__Host-kundeminsideweb"]) {
+    throw new Error(
+      `Elvia login completed without session cookie; final=${result.finalUrl}`
+    );
   }
 
-  return {
-    cookies: deriveCookies(response, initialCookies),
-  };
-}
-
-async function getAuthorizeCode({
-  loggedInCookies: initialCookies,
-}: {
-  loggedInCookies: Record<string, string>;
-}): Promise<{
-  codeVerifier: string;
-  code: string;
-}> {
-  const state = String(new Date().getTime());
-
-  const codeVerifier = crypto.randomUUID() + crypto.randomUUID() + crypto.randomUUID();
-  const codeChallenge = crypto
-    .createHash("sha256")
-    .update(codeVerifier)
-    .digest("base64url");
-
-  const queryParams = {
-    client_id: "45df5938-75fa-4e76-abc8-9498cae9dfad",
-    redirect_uri: "https://www.elvia.no/auth/signin",
-    response_type: "code",
-    scope:
-      "openid profile email kunde.kundeportalapi elvid.delegation-token-create.useraccess",
-    state: state,
-    code_challenge: codeChallenge,
-    code_challenge_method: "S256",
-    response_mode: "query",
-  };
-
-  const response = await fetch(
-    `https://elvid.elvia.io/connect/authorize/callback?${serializeQueryString(
-      queryParams
-    )}`,
-    {
-      method: "GET",
-      headers: {
-        cookie: cookiesHeader(initialCookies),
-      },
-      redirect: "manual",
-    }
-  );
-
-  if (response.status !== 302) {
-    throw new Error(`Expected 302 redirect, got ${response.status} from ${response.url}`);
-  }
-
-  const location = response.headers.get("location");
-  if (location == null) {
-    throw new Error("Missing location header from authorize callback");
-  }
-
-  const queryStringPos = location.indexOf("?");
-  if (queryStringPos === -1) {
-    throw new Error(`Missing query string in redirect location: ${location.slice(0, 200)}`);
-  }
-
-  const parts = Object.fromEntries(
-    location
-      .slice(queryStringPos + 1)
-      .split("&")
-      .map((part) => part.split("=", 2).map((it) => decodeURIComponent(it)))
-  );
-
-  return {
-    code: parts["code"] as string,
-    codeVerifier,
-  };
-}
-
-async function getTokenFromCode({
-  code,
-  codeVerifier,
-}: {
-  code: string;
-  codeVerifier: string;
-}): Promise<{
-  accessToken: string;
-}> {
-  const form = {
-    grant_type: "authorization_code",
-    redirect_uri: "https://www.elvia.no/auth/signin",
-    code: code,
-    code_verifier: codeVerifier,
-    client_id: "45df5938-75fa-4e76-abc8-9498cae9dfad",
-  };
-
-  const response = await fetch("https://elvid.elvia.io/connect/token", {
-    method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-    },
-    body: serializeQueryString(form),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${response.url}`);
-  }
-
-  if (!response.headers.get("content-type")?.includes("application/json")) {
-    throw new Error(`Unexpected content type: ${response.headers.get("content-type")} from ${response.url}`);
-  }
-
-  const responseJson = (await response.json()) as any;
-  const accessToken = responseJson.access_token as string;
-
-  return {
-    accessToken,
-  };
-}
-
-export async function getAccessTokenFromCredentials({
-  email,
-  password,
-}: {
-  email: string;
-  password: string;
-}): Promise<string> {
-  const { cookies: initialCookies, csrfToken } = await getInitialLoginState();
-  const { cookies: loggedInCookies } = await getValidLoginState({
-    initialCookies,
-    csrfToken,
-    email,
-    password,
-  });
-  const { code, codeVerifier } = await getAuthorizeCode({ loggedInCookies });
-  const { accessToken } = await getTokenFromCode({ code, codeVerifier });
-  return accessToken;
+  return session;
 }
 
 export async function getMeterValues({
-  customerId,
   contractId,
-  year,
-  accessToken,
+  firstDate,
+  lastDate,
+  session,
 }: {
-  customerId: string;
   contractId: string;
-  year: number;
-  accessToken: string;
+  firstDate: Temporal.PlainDate;
+  lastDate: Temporal.PlainDate;
+  session: ElviaSession;
 }): Promise<MeterValuesResponse> {
-  const queryParams = {
-    year: String(year),
-    includeUnverifiedValues: "true",
-    includeEmptyValues: "true",
-  };
+  const fromIso = firstDate
+    .toZonedDateTime("Europe/Oslo")
+    .toString({ timeZoneName: "never" });
+  const toIso = lastDate
+    .add({ days: 1 })
+    .toZonedDateTime("Europe/Oslo")
+    .toString({ timeZoneName: "never" });
 
-  const url = `https://kunde.elvia.io/portal/customer/${encodeURIComponent(
-    customerId
-  )}/contract/${encodeURIComponent(
-    contractId
-  )}/metervalue?${serializeQueryString(queryParams)}`;
+  const url =
+    `https://minside.elvia.no/portal/v2/contract/${encodeURIComponent(contractId)}/metervalue?` +
+    serializeQueryString({
+      from: fromIso,
+      to: toIso,
+      includeEmptyValues: "true",
+    });
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      authorization: `Bearer ${accessToken}`,
-    },
+  const response = await hop(session, url, {
+    headers: { "x-csrf": "1", accept: "application/json" },
   });
 
   if (!response.ok) {
-    throw new Error(`Unexpected response: ${response.status} ${response.statusText} from ${url}`);
+    throw new Error(
+      `Unexpected response: ${response.status} ${response.statusText} from ${url}`
+    );
   }
-
   if (!response.headers.get("content-type")?.includes("application/json")) {
-    throw new Error(`Unexpected content type: ${response.headers.get("content-type")} from ${url}`);
+    throw new Error(
+      `Unexpected content type: ${response.headers.get("content-type")} from ${url}`
+    );
   }
 
-  const responseJson = (await response.json()) as MeterValuesResponse;
-
-  return responseJson;
+  return (await response.json()) as MeterValuesResponse;
 }
 
 export function parseMeterValues(values: MeterValuesResponse): HourUsage[] {

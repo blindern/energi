@@ -21,7 +21,6 @@ export const STROEM_METER_LIST = requireEnv("STROEM_METER_LIST").split(",");
 
 export const ELVIA_EMAIL = requireEnv("ELVIA_EMAIL");
 export const ELVIA_PASSWORD = requireEnv("ELVIA_PASSWORD");
-export const ELVIA_CUSTOMER_ID = requireEnv("ELVIA_CUSTOMER_ID");
 
 // meterId:contractId,meterId:contractId,...
 export const ELVIA_CONTRACT_LIST = requireEnv("ELVIA_CONTRACT_LIST")

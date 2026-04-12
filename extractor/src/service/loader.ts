@@ -3,7 +3,6 @@ import * as R from "ramda";
 import { logger } from "../logger.ts";
 import {
   ELVIA_CONTRACT_LIST,
-  ELVIA_CUSTOMER_ID,
   ELVIA_EMAIL,
   ELVIA_PASSWORD,
   FJERNVARME_ANLEGG_NUMMER,
@@ -19,8 +18,8 @@ import {
 } from "../extract/fjernvarme.ts";
 import { getNordpoolData } from "../extract/nordpool.ts";
 import {
-  getAccessTokenFromCredentials,
   getMeterValues,
+  loginToElvia,
   parseMeterValues,
 } from "../extract/stroem.ts";
 import {
@@ -242,28 +241,24 @@ export async function loadStroemIfNeeded(
 
   logger.info("Loading data for stroem");
 
-  const accessToken = await getAccessTokenFromCredentials({
+  const session = await loginToElvia({
     email: ELVIA_EMAIL,
     password: ELVIA_PASSWORD,
   });
 
-  const years = R.range(firstDate.year, lastDate.year + 1);
-
   for (const contract of activeContracts) {
-    for (const year of years) {
-      const meterValues = await getMeterValues({
-        customerId: ELVIA_CUSTOMER_ID,
-        contractId: contract.contractId,
-        year: year,
-        accessToken,
-      });
+    const meterValues = await getMeterValues({
+      contractId: contract.contractId,
+      firstDate,
+      lastDate,
+      session,
+    });
 
-      const parsed = parseMeterValues(meterValues).filter((it) =>
-        isDateInRange(firstDate, lastDate, it.date)
-      );
+    const parsed = parseMeterValues(meterValues).filter((it) =>
+      isDateInRange(firstDate, lastDate, it.date)
+    );
 
-      mergePowerUsageForMeter(data, contract.meterId, parsed);
-    }
+    mergePowerUsageForMeter(data, contract.meterId, parsed);
   }
 }
 
