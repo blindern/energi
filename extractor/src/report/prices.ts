@@ -955,7 +955,6 @@ function calculateStroemHourlyPriceFrom2026Jan(props: {
     usageKwh: props.usageKwh,
     variableByKwh,
     static: {
-      "Nettleie: Enova påslag": (800 * 1.25) / 365 / 24,
       "Nettleie: Fastledd":
         (nettFastleddMaanedByMonth[yearMonth] ?? NaN) /
         plainDate.daysInMonth /
