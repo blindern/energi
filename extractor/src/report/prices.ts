@@ -854,13 +854,17 @@ function calculateStroemHourlyPriceFrom2025Jan(props: {
     ? props.date >= norgesprisFrom[props.meterName]!
     : false;
 
+  // Fra des 2025 ble Enova påslag (800 kr/år fastavgift) erstattet av
+  // Energifondet (1 øre/kWh) — trolig pga. reklassifisering til husholdning.
+  const isEnergifondetKwh = props.date >= "2025-12";
+
   const variableByKwh = multiplyWithUsage(props.usageKwh, {
     "Strøm: Kraft": kraftPerKwh,
     "Strøm: Påslag": stroemPaaslagPerKwh,
     "Diverse: Nettleiehåndtering": 0.0025 * 1.25,
     // TODO: Nordfløy har forskjellige pristrinn på effekt - ikke tatt høyde for i denne beregningen p.t.
     "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
-    "Nettleie: Energifondet": 0.01 * 1.25,
+    "Nettleie: Energifondet": isEnergifondetKwh ? 0.01 * 1.25 : 0,
     "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
     Strømstøtte: isNorgespris
       ? 0
@@ -882,7 +886,7 @@ function calculateStroemHourlyPriceFrom2025Jan(props: {
     usageKwh: props.usageKwh,
     variableByKwh,
     static: {
-      "Nettleie: Enova påslag": (800 * 1.25) / 365 / 24,
+      "Nettleie: Enova påslag": isEnergifondetKwh ? 0 : (800 * 1.25) / 365 / 24,
       "Nettleie: Fastledd":
         (nettFastleddMaanedByMonth[yearMonth] ?? NaN) /
         plainDate.daysInMonth /
