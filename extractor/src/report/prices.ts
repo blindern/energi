@@ -331,6 +331,10 @@ export const stroemFakturaPriceByMonthByMeterName: Record<
     "2025-08": 31196.92 * 1.25,
     "2025-09": 28096.61 * 1.25,
     "2025-10": 34894.03 * 1.25,
+    "2025-11": 45802.92 * 1.25,
+    "2025-12": 38572.57 * 1.25,
+    "2026-01": 57955.85 * 1.25,
+    "2026-02": 54105.95 * 1.25,
   },
   // Nordfløy
   "707057500058091327": {
@@ -339,6 +343,10 @@ export const stroemFakturaPriceByMonthByMeterName: Record<
     "2025-08": 4338.75 * 1.25,
     "2025-09": 6655.18 * 1.25,
     "2025-10": 8888.52 * 1.25,
+    "2025-11": 11244.36 * 1.25,
+    "2025-12": 9944.16 * 1.25,
+    "2026-01": 14455.04 * 1.25,
+    "2026-02": 13166.61 * 1.25,
   },
 };
 
@@ -438,8 +446,8 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2025-10": 0.05 * 1.25,
   "2025-11": 0.05 * 1.25,
   "2025-12": 0.05 * 1.25,
-  "2026-01": 0.05 * 1.25, // Asssumption.
-  "2026-02": 0.05 * 1.25, // Asssumption.
+  "2026-01": 0.05 * 1.25,
+  "2026-02": 0.05 * 1.25,
   "2026-03": 0.05 * 1.25, // Asssumption.
   "2026-04": 0.05 * 1.25, // Asssumption.
   "2026-05": 0.05 * 1.25, // Asssumption.
@@ -505,12 +513,12 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2025-08": 0.1693 * 1.25,
   "2025-09": 0.1693 * 1.25,
   "2025-10": 0.1253 * 1.25,
-  "2025-11": 0.1253 * 1.25, // Assumption.
-  "2025-12": 0.1253 * 1.25, // Assumption.
+  "2025-11": 0.1253 * 1.25,
+  "2025-12": 0.1253 * 1.25,
   // https://www.regjeringen.no/no/aktuelt/foreslar-reduserte-stromutgifter/id3124548/
   // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2026/id3121982/
-  "2026-01": 0.0713 * 1.25, // Assumption.
-  "2026-02": 0.0713 * 1.25, // Assumption.
+  "2026-01": 0.0713 * 1.25,
+  "2026-02": 0.0713 * 1.25,
   "2026-03": 0.0713 * 1.25, // Assumption.
   "2026-04": 0.0713 * 1.25, // Assumption.
   "2026-05": 0.0713 * 1.25, // Assumption.
@@ -577,10 +585,10 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   // Antatt prisjustering fra 1. oktober.
   // https://www.elvia.no/siteassets/dokumenter/priser/2025/1-oktober-2025/tariffblad_3_0_stor-naring_effekt_lavspent_20251001.pdf
   "2025-10": 107.6 * 74 * 1.25, // From invoice.
-  "2025-11": 115 * 74 * 1.25, // Guess.
-  "2025-12": 120 * 74 * 1.25, // Guess.
+  "2025-11": 115.2 * 74 * 1.25, // From invoice.
+  "2025-12": 113.8 * 74 * 1.25, // From invoice.
   "2026-01": 112.8 * 74 * 1.25, // From invoice.
-  "2026-02": 121 * 74 * 1.25, // Guess.
+  "2026-02": 121.4 * 74 * 1.25, // From invoice.
   "2026-03": 107.2 * 74 * 1.25, // Guess.
   "2026-04": 104 * 31 * 1.25, // Guess.
   "2026-05": 117.6 * 31 * 1.25, // Guess.
