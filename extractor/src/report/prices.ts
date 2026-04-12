@@ -198,7 +198,7 @@ const fjernvarmeNettleiePerKwhByMonth: Record<string, number | undefined> = {
 export function fjernvarmeRabatt(
   month: Temporal.PlainYearMonth,
   spotpriceMonth: number,
-  priceSupport: number
+  priceSupport: number,
 ) {
   const monthStr = month.toString();
   const cutoff2022 = "2022-11";
@@ -676,7 +676,7 @@ export const FJERNVARME_SUBSIDY_CAP_KWH = 4500;
 export function getSubsidizedKwh(
   usageKwh: number,
   capKwh: number,
-  cumulativeUsedKwh: number
+  cumulativeUsedKwh: number,
 ): number {
   const remaining = Math.max(0, capKwh - cumulativeUsedKwh);
   return Math.min(usageKwh, remaining);
@@ -687,6 +687,132 @@ const norgesprisFrom: Record<string, string> = {
   "707057500058091327": "2025-10-31",
 };
 
+// Nordfløy bruker standard næringstariff (effekttrinn), ikke lavspent uttak.
+// Kilde: Fortum-fakturaer (inneholder Elvia-spesifikasjonen).
+const nordfloyMeterId = "707057500058091327";
+
+const nordfloyEnergileddDagPerKwh = 0.2099 * 1.25;
+const nordfloyEnergileddNattPerKwh = 0.1299 * 1.25;
+
+// Månedlig fastledd inkl. mva, dekker trinn × månedssats fra faktura.
+const nordfloyNettleieFastleddByMonth: Record<string, number | undefined> = {
+  "2025-06": 100 * 1.25, // From invoice (30.06 kun, 1 dag i 0-2 kW trinn).
+  "2025-07": 328 * 1.25, // From invoice (10-15 kW).
+  "2025-08": 416 * 1.25, // From invoice (15-20 kW).
+  "2025-09": 940 * 1.25, // From invoice (25-50 kW).
+  "2025-10": 940 * 1.25, // From invoice.
+  "2025-11": 940 * 1.25, // From invoice.
+  "2025-12": 940 * 1.25, // From invoice.
+  "2026-01": 940 * 1.25, // From invoice.
+  "2026-02": 940 * 1.25, // From invoice.
+  "2026-03": 940 * 1.25, // Assumption (25-50 kW, vinter).
+  "2026-04": 416 * 1.25, // Assumption (15-20 kW, vår).
+  "2026-05": 328 * 1.25, // Assumption (10-15 kW, vår).
+  "2026-06": 328 * 1.25, // Assumption (10-15 kW, sommer).
+  "2026-07": 328 * 1.25, // Assumption (10-15 kW, speiler 2025-07).
+  "2026-08": 416 * 1.25, // Assumption (15-20 kW, speiler 2025-08).
+  "2026-09": 940 * 1.25, // Assumption (25-50 kW, speiler 2025-09).
+  "2026-10": 940 * 1.25, // Assumption.
+  "2026-11": 940 * 1.25, // Assumption.
+  "2026-12": 940 * 1.25, // Assumption.
+  "2027-01": 940 * 1.25, // Assumption.
+  "2027-02": 940 * 1.25, // Assumption.
+  "2027-03": 940 * 1.25, // Assumption.
+  "2027-04": 416 * 1.25, // Assumption.
+  "2027-05": 328 * 1.25, // Assumption.
+  "2027-06": 328 * 1.25, // Assumption.
+  "2027-07": 328 * 1.25, // Assumption.
+  "2027-08": 416 * 1.25, // Assumption.
+  "2027-09": 940 * 1.25, // Assumption.
+  "2027-10": 940 * 1.25, // Assumption.
+  "2027-11": 940 * 1.25, // Assumption.
+  "2027-12": 940 * 1.25, // Assumption.
+};
+
+// Norske offentlige helligdager 2025..2030. Bevegelige datoer beregnet
+// fra påskesøndag (2025-04-20, 2026-04-05, 2027-03-28, 2028-04-16,
+// 2029-04-01, 2030-04-21).
+const norskeHelligdager: ReadonlySet<string> = new Set([
+  "2025-01-01",
+  "2025-04-17",
+  "2025-04-18",
+  "2025-04-20",
+  "2025-04-21",
+  "2025-05-01",
+  "2025-05-17",
+  "2025-05-29",
+  "2025-06-08",
+  "2025-06-09",
+  "2025-12-25",
+  "2025-12-26",
+  "2026-01-01",
+  "2026-04-02",
+  "2026-04-03",
+  "2026-04-05",
+  "2026-04-06",
+  "2026-05-01",
+  "2026-05-14",
+  "2026-05-17",
+  "2026-05-24",
+  "2026-05-25",
+  "2026-12-25",
+  "2026-12-26",
+  "2027-01-01",
+  "2027-03-25",
+  "2027-03-26",
+  "2027-03-28",
+  "2027-03-29",
+  "2027-05-01",
+  "2027-05-06",
+  "2027-05-16",
+  "2027-05-17",
+  "2027-12-25",
+  "2027-12-26",
+  "2028-01-01",
+  "2028-04-13",
+  "2028-04-14",
+  "2028-04-16",
+  "2028-04-17",
+  "2028-05-01",
+  "2028-05-17",
+  "2028-05-25",
+  "2028-06-04",
+  "2028-06-05",
+  "2028-12-25",
+  "2028-12-26",
+  "2029-01-01",
+  "2029-03-29",
+  "2029-03-30",
+  "2029-04-01",
+  "2029-04-02",
+  "2029-05-01",
+  "2029-05-10",
+  "2029-05-17",
+  "2029-05-20",
+  "2029-05-21",
+  "2029-12-25",
+  "2029-12-26",
+  "2030-01-01",
+  "2030-04-18",
+  "2030-04-19",
+  "2030-04-21",
+  "2030-04-22",
+  "2030-05-01",
+  "2030-05-17",
+  "2030-05-30",
+  "2030-06-09",
+  "2030-06-10",
+  "2030-12-25",
+  "2030-12-26",
+]);
+
+function isNordfloyDaytime(date: string, hour: number): boolean {
+  if (hour < 6 || hour >= 22) return false;
+  if (norskeHelligdager.has(date)) return false;
+  const dow = Temporal.PlainDate.from(date).dayOfWeek;
+  return dow <= 5;
+}
+
 function getPriceSupportThreshold(yearMonth: string) {
   if (yearMonth < "2024") return 0.7;
   if (yearMonth < "2025") return 0.73;
@@ -695,7 +821,7 @@ function getPriceSupportThreshold(yearMonth: string) {
 
 function getPriceSupportOfMonthPerKwh(
   yearMonth: string,
-  averageSpotPrice: number
+  averageSpotPrice: number,
 ): number {
   const percent = priceSupportPercentByMonth[yearMonth];
   if (percent == null) {
@@ -704,13 +830,13 @@ function getPriceSupportOfMonthPerKwh(
 
   return Math.max(
     0,
-    (averageSpotPrice - getPriceSupportThreshold(yearMonth) * 1.25) * percent
+    (averageSpotPrice - getPriceSupportThreshold(yearMonth) * 1.25) * percent,
   );
 }
 
 function getPriceSupportOfHourPerKwh(
   yearMonth: string,
-  spotpriceHourPerKwh: number
+  spotpriceHourPerKwh: number,
 ) {
   const percent = priceSupportPercentByMonth[yearMonth];
   if (percent == null) {
@@ -719,7 +845,8 @@ function getPriceSupportOfHourPerKwh(
 
   return Math.max(
     0,
-    (spotpriceHourPerKwh - getPriceSupportThreshold(yearMonth) * 1.25) * percent
+    (spotpriceHourPerKwh - getPriceSupportThreshold(yearMonth) * 1.25) *
+      percent,
   );
 }
 
@@ -753,7 +880,7 @@ function calculateStroemHourlyPricePre2023Apr(props: {
       "Nettleie: Forbruksavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
       Strømstøtte: -getPriceSupportOfMonthPerKwh(
         yearMonth,
-        props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+        props.indexedData.spotpriceByMonth[yearMonth] ?? 0,
       ),
     }),
     static: {
@@ -804,7 +931,7 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
         ? -getPriceSupportOfHourPerKwh(yearMonth, spotpriceHourPerKwh)
         : -getPriceSupportOfMonthPerKwh(
             yearMonth,
-            props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+            props.indexedData.spotpriceByMonth[yearMonth] ?? 0,
           ),
     }),
     static: {
@@ -822,6 +949,83 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
   };
 }
 
+function calculateNordfloyStroemHourlyPrice(
+  props: {
+    data: Data;
+    indexedData: IndexedData;
+    date: string;
+    hour: number;
+    usageKwh: number;
+    meterName: string;
+    subsidizedKwh?: number | undefined;
+  },
+  stroemPaaslagPerKwh: number,
+): UsagePrice {
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+  const dateHour = dateHourIndexer(props);
+
+  const spotpriceHourPerKwh =
+    props.indexedData.spotpriceByHour[dateHour] ?? NaN;
+
+  let kraftPerKwh =
+    props.indexedData.stroemFakturaPricePerKwhByMonthByMeterName[
+      props.meterName
+    ]?.[yearMonth];
+  if (kraftPerKwh != null) {
+    kraftPerKwh -= stroemPaaslagPerKwh;
+  } else {
+    kraftPerKwh = spotpriceHourPerKwh * stroemKraftMonthlyDefaultFactor;
+  }
+
+  const isNorgespris = norgesprisFrom[props.meterName]
+    ? props.date >= norgesprisFrom[props.meterName]!
+    : false;
+
+  const energileddPerKwh = isNordfloyDaytime(props.date, props.hour)
+    ? nordfloyEnergileddDagPerKwh
+    : nordfloyEnergileddNattPerKwh;
+
+  // Fra des 2025 erstattet Energifondet (1 øre/kWh) Enova påslag (800 kr/år).
+  const useEnergifondet = props.date >= "2025-12";
+
+  const variableByKwh = multiplyWithUsage(props.usageKwh, {
+    "Strøm: Kraft": kraftPerKwh,
+    "Strøm: Påslag": stroemPaaslagPerKwh,
+    "Diverse: Nettleiehåndtering": 0.0025 * 1.25,
+    "Nettleie: Energiledd": energileddPerKwh,
+    ...(useEnergifondet ? { "Nettleie: Energifondet": 0.01 * 1.25 } : {}),
+    "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+    Strømstøtte: isNorgespris
+      ? 0
+      : -getPriceSupportOfHourPerKwh(yearMonth, spotpriceHourPerKwh),
+    Norgespris: isNorgespris ? 0.4 * 1.25 - spotpriceHourPerKwh : 0,
+  });
+
+  if (
+    props.subsidizedKwh != null &&
+    props.subsidizedKwh < props.usageKwh &&
+    props.usageKwh > 0
+  ) {
+    const factor = props.subsidizedKwh / props.usageKwh;
+    if (variableByKwh.Strømstøtte) variableByKwh.Strømstøtte *= factor;
+    if (variableByKwh.Norgespris) variableByKwh.Norgespris *= factor;
+  }
+
+  const fastleddMnd = nordfloyNettleieFastleddByMonth[yearMonth] ?? NaN;
+
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh,
+    static: {
+      "Nettleie: Fastledd": fastleddMnd / plainDate.daysInMonth / 24,
+      ...(useEnergifondet
+        ? {}
+        : { "Nettleie: Enova påslag": (800 * 1.25) / 365 / 24 }),
+    },
+  };
+}
+
 function calculateStroemHourlyPriceFrom2025Jan(props: {
   data: Data;
   indexedData: IndexedData;
@@ -832,6 +1036,10 @@ function calculateStroemHourlyPriceFrom2025Jan(props: {
   subsidizedKwh?: number | undefined;
 }): UsagePrice {
   const stroemPaaslagPerKwh = 0.0165 * 1.25;
+
+  if (props.meterName === nordfloyMeterId) {
+    return calculateNordfloyStroemHourlyPrice(props, stroemPaaslagPerKwh);
+  }
 
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
@@ -862,7 +1070,6 @@ function calculateStroemHourlyPriceFrom2025Jan(props: {
     "Strøm: Kraft": kraftPerKwh,
     "Strøm: Påslag": stroemPaaslagPerKwh,
     "Diverse: Nettleiehåndtering": 0.0025 * 1.25,
-    // TODO: Nordfløy har forskjellige pristrinn på effekt - ikke tatt høyde for i denne beregningen p.t.
     "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
     "Nettleie: Energifondet": isEnergifondetKwh ? 0.01 * 1.25 : 0,
     "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
@@ -910,6 +1117,10 @@ function calculateStroemHourlyPriceFrom2026Jan(props: {
 }): UsagePrice {
   const stroemPaaslagPerKwh = 0.0145 * 1.25;
 
+  if (props.meterName === nordfloyMeterId) {
+    return calculateNordfloyStroemHourlyPrice(props, stroemPaaslagPerKwh);
+  }
+
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
   const dateHour = dateHourIndexer(props);
@@ -935,7 +1146,6 @@ function calculateStroemHourlyPriceFrom2026Jan(props: {
     "Strøm: Kraft": kraftPerKwh,
     "Strøm: Påslag": stroemPaaslagPerKwh,
     "Diverse: Nettleiehåndtering": 0.0025 * 1.25,
-    // TODO: Nordfløy har forskjellige pristrinn på effekt - ikke tatt høyde for i denne beregningen p.t.
     "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
     "Nettleie: Energifondet": 0.01 * 1.25,
     "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
@@ -1018,7 +1228,7 @@ export function calculateFjernvarmeHourlyPricePre2025Jan(props: {
 
   const priceSupport = getPriceSupportOfMonthPerKwh(
     yearMonth,
-    props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+    props.indexedData.spotpriceByMonth[yearMonth] ?? 0,
   );
 
   const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
@@ -1030,7 +1240,7 @@ export function calculateFjernvarmeHourlyPricePre2025Jan(props: {
       Rabatt: fjernvarmeRabatt(
         plainDate.toPlainYearMonth(),
         spotpriceMonth,
-        priceSupport
+        priceSupport,
       ),
       "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
       Nettleie: fjernvarmeNettleiePerKwhByMonth[yearMonth] ?? NaN,
@@ -1058,7 +1268,7 @@ export function calculateFjernvarmeHourlyPriceFrom2025Jan(props: {
 
   const priceSupport = getPriceSupportOfMonthPerKwh(
     yearMonth,
-    props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+    props.indexedData.spotpriceByMonth[yearMonth] ?? 0,
   );
 
   const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
@@ -1068,7 +1278,7 @@ export function calculateFjernvarmeHourlyPriceFrom2025Jan(props: {
     Rabatt: fjernvarmeRabatt(
       plainDate.toPlainYearMonth(),
       spotpriceMonth,
-      priceSupport
+      priceSupport,
     ),
     "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
     Nettleie: fjernvarmeNettleiePerKwhByMonth[yearMonth] ?? NaN,
@@ -1153,7 +1363,7 @@ export function calculateHourlyPrice({
         usageKwh,
         meterName,
         subsidizedKwh: stroemSubsidizedKwh?.[meterName],
-      })
+      }),
     );
   }
 
@@ -1165,7 +1375,7 @@ export function calculateHourlyPrice({
       hour,
       usageKwh: fjernvarme,
       subsidizedKwh: fjernvarmeSubsidizedKwh,
-    })
+    }),
   );
 
   return result;
@@ -1173,7 +1383,7 @@ export function calculateHourlyPrice({
 
 function addPricesInner(
   one: Record<string, number>,
-  two: Record<string, number>
+  two: Record<string, number>,
 ): Record<string, number> {
   const result: Record<string, number> = {};
 
@@ -1198,7 +1408,7 @@ export function sumPrice(usagePrice: UsagePrice | null): number {
   }
   return roundTwoDec(
     R.sum(Object.values(usagePrice.variableByKwh)) +
-      R.sum(Object.values(usagePrice.static))
+      R.sum(Object.values(usagePrice.static)),
   );
 }
 
@@ -1215,7 +1425,7 @@ export function flattenPrices(items: UsagePrice[]): UsagePrice {
 
 export function multiplyWithUsage(
   usage: number,
-  values: UsagePrice["variableByKwh"]
+  values: UsagePrice["variableByKwh"],
 ): UsagePrice["variableByKwh"] {
   return R.mapObjIndexed((it) => it * usage, values);
 }
