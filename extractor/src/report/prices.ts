@@ -58,7 +58,7 @@ export interface UsagePrice {
 // Sist fakturert for perioden november 2024.
 export const stroemFastbeloepAar = 600 * 1.25;
 
-// https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
+// https://www.elvia.no/nettleie/alt-om-nettleiepriser/store-bedrifter-over-100-000-kwh/
 const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2022-01": 340 * 1.25, // From invoice.
   "2022-02": 340 * 1.25, // From invoice.
@@ -107,15 +107,15 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2025-08": 433.33 * 1.25, // From invoice.
   "2025-09": 433.33 * 1.25, // From invoice.
   "2025-10": 433.33 * 1.25, // From invoice.
-  "2025-11": 433.33 * 1.25, // Assumption.
-  "2025-12": 433.33 * 1.25, // Assumption.
-  "2026-01": 433.33 * 1.25, // Assumption.
-  "2026-02": 433.33 * 1.25, // Assumption.
-  "2026-03": 433.33 * 1.25, // Assumption.
-  "2026-04": 433.33 * 1.25, // Assumption.
-  "2026-05": 433.33 * 1.25, // Assumption.
-  "2026-06": 433.33 * 1.25, // Assumption.
-  "2026-07": 433.33 * 1.25, // Assumption.
+  "2025-11": 433.33 * 1.25, // From invoice.
+  "2025-12": 433.33 * 1.25, // From invoice.
+  "2026-01": 433.33 * 1.25, // From invoice.
+  "2026-02": 433.33 * 1.25, // From invoice.
+  "2026-03": 433.33 * 1.25, // From invoice.
+  "2026-04": 433.33 * 1.25, // From invoice.
+  "2026-05": 433.33 * 1.25, // From invoice.
+  "2026-06": 433.33 * 1.25, // From invoice.
+  "2026-07": 433.33 * 1.25, // From invoice.
   "2026-08": 433.33 * 1.25, // Assumption.
   "2026-09": 433.33 * 1.25, // Assumption.
   "2026-10": 433.33 * 1.25, // Assumption.
@@ -335,6 +335,11 @@ export const stroemFakturaPriceByMonthByMeterName: Record<
     "2025-12": 38572.57 * 1.25,
     "2026-01": 57955.85 * 1.25,
     "2026-02": 54105.95 * 1.25,
+    "2026-03": 60876.33 * 1.25,
+    "2026-04": 48837.49 * 1.25,
+    "2026-05": 47243.93 * 1.25,
+    "2026-06": 32966.28 * 1.25,
+    "2026-07": 36612.58 * 1.25,
   },
   // Nordfløy
   "707057500058091327": {
@@ -347,6 +352,11 @@ export const stroemFakturaPriceByMonthByMeterName: Record<
     "2025-12": 9944.16 * 1.25,
     "2026-01": 14455.04 * 1.25,
     "2026-02": 13166.61 * 1.25,
+    "2026-03": 15936.71 * 1.25,
+    "2026-04": 12972.46 * 1.25,
+    "2026-05": 12547.5 * 1.25,
+    "2026-06": 10123.54 * 1.25,
+    "2026-07": 11900.52 * 1.25,
   },
 };
 
@@ -396,7 +406,7 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   // Ikke noe finansielt resultat fra og med 2025 - endret strømavtale.
 };
 
-// https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
+// https://www.elvia.no/nettleie/alt-om-nettleiepriser/store-bedrifter-over-100-000-kwh/
 export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2022-01": 0.07 * 1.25,
   "2022-02": 0.07 * 1.25,
@@ -448,16 +458,16 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2025-12": 0.05 * 1.25,
   "2026-01": 0.05 * 1.25,
   "2026-02": 0.05 * 1.25,
-  "2026-03": 0.05 * 1.25, // Asssumption.
-  "2026-04": 0.05 * 1.25, // Asssumption.
-  "2026-05": 0.05 * 1.25, // Asssumption.
-  "2026-06": 0.05 * 1.25, // Asssumption.
-  "2026-07": 0.05 * 1.25, // Asssumption.
-  "2026-08": 0.05 * 1.25, // Asssumption.
-  "2026-09": 0.05 * 1.25, // Asssumption.
-  "2026-10": 0.05 * 1.25, // Asssumption.
-  "2026-11": 0.05 * 1.25, // Asssumption.
-  "2026-12": 0.05 * 1.25, // Asssumption.
+  "2026-03": 0.05 * 1.25, // From invoice.
+  "2026-04": 0.05 * 1.25, // From invoice.
+  "2026-05": 0.05 * 1.25, // From invoice.
+  "2026-06": 0.05 * 1.25, // From invoice.
+  "2026-07": 0.05 * 1.25, // From invoice.
+  "2026-08": 0.05 * 1.25, // Assumption.
+  "2026-09": 0.05 * 1.25, // Assumption.
+  "2026-10": 0.05 * 1.25, // Assumption.
+  "2026-11": 0.05 * 1.25, // Assumption.
+  "2026-12": 0.05 * 1.25, // Assumption.
 };
 
 // https://www.skatteetaten.no/bedrift-og-organisasjon/avgifter/saravgifter/om/elektrisk-kraft/
@@ -519,11 +529,11 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2026/id3121982/
   "2026-01": 0.0713 * 1.25,
   "2026-02": 0.0713 * 1.25,
-  "2026-03": 0.0713 * 1.25, // Assumption.
-  "2026-04": 0.0713 * 1.25, // Assumption.
-  "2026-05": 0.0713 * 1.25, // Assumption.
-  "2026-06": 0.0713 * 1.25, // Assumption.
-  "2026-07": 0.0713 * 1.25, // Assumption.
+  "2026-03": 0.0713 * 1.25,
+  "2026-04": 0.0713 * 1.25,
+  "2026-05": 0.0713 * 1.25,
+  "2026-06": 0.0713 * 1.25,
+  "2026-07": 0.0713 * 1.25,
   "2026-08": 0.0713 * 1.25, // Assumption.
   "2026-09": 0.0713 * 1.25, // Assumption.
   "2026-10": 0.0713 * 1.25, // Assumption.
@@ -531,7 +541,7 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2026-12": 0.0713 * 1.25, // Assumption.
 };
 
-// https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
+// https://www.elvia.no/nettleie/alt-om-nettleiepriser/store-bedrifter-over-100-000-kwh/
 export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2022-01": 122 * 84 * 1.25, // From invoice.
   "2022-02": 141.6 * 84 * 1.25, // From invoice.
@@ -589,16 +599,18 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2025-12": 113.8 * 74 * 1.25, // From invoice.
   "2026-01": 112.8 * 74 * 1.25, // From invoice.
   "2026-02": 121.4 * 74 * 1.25, // From invoice.
-  "2026-03": 107.2 * 74 * 1.25, // Guess.
-  "2026-04": 104 * 31 * 1.25, // Guess.
-  "2026-05": 117.6 * 31 * 1.25, // Guess.
-  "2026-06": 116.4 * 31 * 1.25, // Guess.
-  "2026-07": 70.2 * 31 * 1.25, // Guess.
-  "2026-08": 95 * 31 * 1.25, // Guess.
-  "2026-09": 107.4 * 31 * 1.25, // Guess.
-  "2026-10": 107.6 * 74 * 1.25, // Guess.
-  "2026-11": 115 * 74 * 1.25, // Guess.
-  "2026-12": 120 * 74 * 1.25, // Guess.
+  "2026-03": 107.2 * 74 * 1.25, // From invoice.
+  "2026-04": 101.4 * 31 * 1.25, // From invoice.
+  "2026-05": 99.2 * 31 * 1.25, // From invoice.
+  "2026-06": 92.6 * 31 * 1.25, // From invoice.
+  // Prisjustering fra 1. juli: sommer 31 -> 46, vinter 74 -> 111 kr/kW.
+  // https://www.elvia.no/siteassets/dokumenter/priser/2026/1-juli-2026/tariffblad_3_0_stor-naring_effekt_lavspent_20260701.pdf
+  "2026-07": 63 * 46 * 1.25, // From invoice.
+  "2026-08": 89.6 * 46 * 1.25, // Assumption (målt effekttopp).
+  "2026-09": 107.4 * 46 * 1.25, // Assumption (fjorårets topp).
+  "2026-10": 107.6 * 111 * 1.25, // Assumption (fjorårets topp).
+  "2026-11": 115.2 * 111 * 1.25, // Assumption (fjorårets topp).
+  "2026-12": 113.8 * 111 * 1.25, // Assumption (fjorårets topp).
 };
 
 // https://www.regjeringen.no/no/aktuelt/vil-forlenge-stromstotten-til-husholdninger-ut-2023/id2930621/
@@ -687,9 +699,11 @@ const norgesprisFrom: Record<string, string> = {
   "707057500058091327": "2025-10-31",
 };
 
-// Nordfløy bruker standard næringstariff (effekttrinn), ikke lavspent uttak.
+// Nordfløy lå på standard næringstariff (effekttrinn) frem til 17. april 2026,
+// da måleren ble flyttet over på samme lavspent uttak (effekttariff) som Gamle BS.
 // Kilde: Fortum-fakturaer (inneholder Elvia-spesifikasjonen).
 const nordfloyMeterId = "707057500058091327";
+const nordfloyLavspentFrom = "2026-04-17";
 
 const nordfloyEnergileddDagPerKwh = 0.2099 * 1.25;
 const nordfloyEnergileddNattPerKwh = 0.1299 * 1.25;
@@ -705,28 +719,24 @@ const nordfloyNettleieFastleddByMonth: Record<string, number | undefined> = {
   "2025-12": 940 * 1.25, // From invoice.
   "2026-01": 940 * 1.25, // From invoice.
   "2026-02": 940 * 1.25, // From invoice.
-  "2026-03": 940 * 1.25, // Assumption (25-50 kW, vinter).
-  "2026-04": 416 * 1.25, // Assumption (15-20 kW, vår).
-  "2026-05": 328 * 1.25, // Assumption (10-15 kW, vår).
-  "2026-06": 328 * 1.25, // Assumption (10-15 kW, sommer).
-  "2026-07": 328 * 1.25, // Assumption (10-15 kW, speiler 2025-07).
-  "2026-08": 416 * 1.25, // Assumption (15-20 kW, speiler 2025-08).
-  "2026-09": 940 * 1.25, // Assumption (25-50 kW, speiler 2025-09).
-  "2026-10": 940 * 1.25, // Assumption.
-  "2026-11": 940 * 1.25, // Assumption.
-  "2026-12": 940 * 1.25, // Assumption.
-  "2027-01": 940 * 1.25, // Assumption.
-  "2027-02": 940 * 1.25, // Assumption.
-  "2027-03": 940 * 1.25, // Assumption.
-  "2027-04": 416 * 1.25, // Assumption.
-  "2027-05": 328 * 1.25, // Assumption.
-  "2027-06": 328 * 1.25, // Assumption.
-  "2027-07": 328 * 1.25, // Assumption.
-  "2027-08": 416 * 1.25, // Assumption.
-  "2027-09": 940 * 1.25, // Assumption.
-  "2027-10": 940 * 1.25, // Assumption.
-  "2027-11": 940 * 1.25, // Assumption.
-  "2027-12": 940 * 1.25, // Assumption.
+  "2026-03": 940 * 1.25, // From invoice.
+  "2026-04": 940 * 1.25, // From invoice (trinnet gjaldt bare til 17.04).
+};
+
+// Nordfløy har egne effektuttak, og deler derfor ikke effektledd med Gamle BS.
+const nordfloyEffektleddByMonth: Record<string, number | undefined> = {
+  // Elvia avregnet 17.04-01.05 med effekttoppen prorata (35,80 kW * 14/30 =
+  // 16,71 kW). Her står hele månedens topp fordi modellen fordeler statiske
+  // ledd over måneden og treffer de samme 14 dagene.
+  "2026-04": 35.8 * 31 * 1.25, // From invoice.
+  "2026-05": 34.9 * 31 * 1.25, // From invoice.
+  "2026-06": 37.05 * 31 * 1.25, // From invoice.
+  "2026-07": 30.3 * 46 * 1.25, // From invoice.
+  "2026-08": 35.25 * 46 * 1.25, // Assumption (målt effekttopp).
+  "2026-09": 34.15 * 46 * 1.25, // Assumption (fjorårets topp).
+  "2026-10": 35.25 * 111 * 1.25, // Assumption (fjorårets topp).
+  "2026-11": 38.9 * 111 * 1.25, // Assumption (fjorårets topp).
+  "2026-12": 34.65 * 111 * 1.25, // Assumption (fjorårets topp).
 };
 
 // Norske offentlige helligdager 2025..2030. Bevegelige datoer beregnet
@@ -1117,9 +1127,17 @@ function calculateStroemHourlyPriceFrom2026Jan(props: {
 }): UsagePrice {
   const stroemPaaslagPerKwh = 0.0145 * 1.25;
 
-  if (props.meterName === nordfloyMeterId) {
+  if (
+    props.meterName === nordfloyMeterId &&
+    props.date < nordfloyLavspentFrom
+  ) {
     return calculateNordfloyStroemHourlyPrice(props, stroemPaaslagPerKwh);
   }
+
+  const effektleddByMonth =
+    props.meterName === nordfloyMeterId
+      ? nordfloyEffektleddByMonth
+      : effektleddPerKwhByMonth;
 
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
@@ -1174,9 +1192,7 @@ function calculateStroemHourlyPriceFrom2026Jan(props: {
         plainDate.daysInMonth /
         24,
       "Nettleie: Effekt":
-        (effektleddPerKwhByMonth[yearMonth] ?? NaN) /
-        plainDate.daysInMonth /
-        24,
+        (effektleddByMonth[yearMonth] ?? NaN) / plainDate.daysInMonth / 24,
     },
   };
 }
