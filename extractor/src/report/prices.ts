@@ -116,8 +116,8 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2026-05": 433.33 * 1.25, // From invoice.
   "2026-06": 433.33 * 1.25, // From invoice.
   "2026-07": 433.33 * 1.25, // From invoice.
-  "2026-08": 433.33 * 1.25, // Assumption.
-  "2026-09": 433.33 * 1.25, // Assumption.
+  "2026-08": 433.33 * 1.25, // From invoice.
+  "2026-09": 433.33 * 1.25, // From invoice.
   "2026-10": 433.33 * 1.25, // Assumption.
   "2026-11": 433.33 * 1.25, // Assumption.
   "2026-12": 433.33 * 1.25, // Assumption.
@@ -340,6 +340,8 @@ export const stroemFakturaPriceByMonthByMeterName: Record<
     "2026-05": 47243.93 * 1.25,
     "2026-06": 32966.28 * 1.25,
     "2026-07": 36612.58 * 1.25,
+    "2026-08": 50702.51 * 1.25,
+    "2026-09": 49390.99 * 1.25,
   },
   // Nordfløy
   "707057500058091327": {
@@ -357,6 +359,8 @@ export const stroemFakturaPriceByMonthByMeterName: Record<
     "2026-05": 12547.5 * 1.25,
     "2026-06": 10123.54 * 1.25,
     "2026-07": 11900.52 * 1.25,
+    "2026-08": 15254.5 * 1.25,
+    "2026-09": 14027.12 * 1.25,
   },
 };
 
@@ -463,8 +467,8 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2026-05": 0.05 * 1.25, // From invoice.
   "2026-06": 0.05 * 1.25, // From invoice.
   "2026-07": 0.05 * 1.25, // From invoice.
-  "2026-08": 0.05 * 1.25, // Assumption.
-  "2026-09": 0.05 * 1.25, // Assumption.
+  "2026-08": 0.05 * 1.25, // From invoice.
+  "2026-09": 0.05 * 1.25, // From invoice.
   "2026-10": 0.05 * 1.25, // Assumption.
   "2026-11": 0.05 * 1.25, // Assumption.
   "2026-12": 0.05 * 1.25, // Assumption.
@@ -534,8 +538,8 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2026-05": 0.0713 * 1.25,
   "2026-06": 0.0713 * 1.25,
   "2026-07": 0.0713 * 1.25,
-  "2026-08": 0.0713 * 1.25, // Assumption.
-  "2026-09": 0.0713 * 1.25, // Assumption.
+  "2026-08": 0.0713 * 1.25,
+  "2026-09": 0.0713 * 1.25,
   "2026-10": 0.0713 * 1.25, // Assumption.
   "2026-11": 0.0713 * 1.25, // Assumption.
   "2026-12": 0.0713 * 1.25, // Assumption.
@@ -606,8 +610,8 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   // Prisjustering fra 1. juli: sommer 31 -> 46, vinter 74 -> 111 kr/kW.
   // https://www.elvia.no/siteassets/dokumenter/priser/2026/1-juli-2026/tariffblad_3_0_stor-naring_effekt_lavspent_20260701.pdf
   "2026-07": 63 * 46 * 1.25, // From invoice.
-  "2026-08": 89.6 * 46 * 1.25, // Assumption (målt effekttopp).
-  "2026-09": 107.4 * 46 * 1.25, // Assumption (fjorårets topp).
+  "2026-08": 89.6 * 46 * 1.25, // From invoice.
+  "2026-09": 101.8 * 46 * 1.25, // From invoice.
   "2026-10": 107.6 * 111 * 1.25, // Assumption (fjorårets topp).
   "2026-11": 115.2 * 111 * 1.25, // Assumption (fjorårets topp).
   "2026-12": 113.8 * 111 * 1.25, // Assumption (fjorårets topp).
@@ -732,8 +736,8 @@ const nordfloyEffektleddByMonth: Record<string, number | undefined> = {
   "2026-05": 34.9 * 31 * 1.25, // From invoice.
   "2026-06": 37.05 * 31 * 1.25, // From invoice.
   "2026-07": 30.3 * 46 * 1.25, // From invoice.
-  "2026-08": 35.25 * 46 * 1.25, // Assumption (målt effekttopp).
-  "2026-09": 34.15 * 46 * 1.25, // Assumption (fjorårets topp).
+  "2026-08": 35.25 * 46 * 1.25, // From invoice.
+  "2026-09": 35.95 * 46 * 1.25, // From invoice.
   "2026-10": 35.25 * 111 * 1.25, // Assumption (fjorårets topp).
   "2026-11": 38.9 * 111 * 1.25, // Assumption (fjorårets topp).
   "2026-12": 34.65 * 111 * 1.25, // Assumption (fjorårets topp).
