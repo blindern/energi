@@ -257,10 +257,10 @@ export function fjernvarmeRabatt(
     return step;
   } else {
     // 2025-12-02: https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/endring-i-prismodellen-fra-1-november
-    // 5 % => 5.25 %, cap at 77 øre eks mva, based on spotprice (not after strømstøtte)
+    // 5 % => 5.25 %, cap at strømstøtte threshold, based on spotprice (not after strømstøtte)
 
     const threshold1 = 0.5 * 1.25;
-    const threshold2 = 0.77 * 1.25;
+    const threshold2 = getPriceSupportThreshold(monthStr) * 1.25;
     const step =
       -Math.max(0, Math.min(threshold2, spotpriceMonth) - threshold1) * 0.0525;
 
@@ -830,7 +830,8 @@ function isNordfloyDaytime(date: string, hour: number): boolean {
 function getPriceSupportThreshold(yearMonth: string) {
   if (yearMonth < "2024") return 0.7;
   if (yearMonth < "2025") return 0.73;
-  return 0.75;
+  if (yearMonth < "2026") return 0.75;
+  return 0.77;
 }
 
 function getPriceSupportOfMonthPerKwh(
